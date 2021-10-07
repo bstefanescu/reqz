@@ -1,10 +1,10 @@
 {
   "name": "reqz",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "Automate chains of requests to help test and develop rest apps",
   "main": "lib/client.js",
   "bin": {
-    "reqx": "./main.js"
+    "reqz": "./bin/reqz"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
