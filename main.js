@@ -1,10 +1,10 @@
-#!/bin/node
+#!/usr/bin/env node
 
 const yargs = require('yargs');
 const { hideBin } = require('yargs/helpers');
 
-const {parseValue} = require('./utils.js');
-const Client = require('./client.js');
+const {parseValue} = require('./lib/utils.js');
+const Client = require('./lib/client.js');
 
 const argv = yargs(hideBin(process.argv))
     .parserConfiguration({'unknown-options-as-args': true})
