@@ -1,0 +1,37 @@
+{
+  "name": "reqz",
+  "version": "0.1.0",
+  "description": "Automate chains of requests to help test and develop rest apps",
+  "main": "lib/client.js",
+  "bin": {
+    "reqx": "./main.js"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "request",
+    "rest",
+    "automation",
+    "chain",
+    "flow",
+    "test",
+    "post"
+  ],
+  "author": "Bogdan Stefanescu <stefanescu.bogdan@gmail.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bstefanescu/reqz.git"
+  },
+  "bugs": {
+    "url": "https://github.com/bstefanescu/reqz/issues"
+  },
+  "homepage": "https://github.com/bstefanescu/reqz#readme",
+  "dependencies": {
+    "chalk": "^4.1.2",
+    "fast-glob": "^3.2.7",
+    "superagent": "^6.1.0",
+    "yargs": "^17.2.1"
+  }
+}
