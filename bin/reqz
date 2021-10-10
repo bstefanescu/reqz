@@ -25,9 +25,14 @@ const argv = yargs(hideBin(process.argv))
         type: 'string',
         description: 'Log settings. A list separated by commas. Can be any combination of: "req,reqh,reqb,resh,resb,chain".'
     })
+    .option('env', {
+        alias: 'e',
+        type: 'string',
+        description: 'Additional env file to load over the default .env one'
+    })
     .option('play', {
-        type: 'array',
-        description: 'Play the same request for each given variables file. Be warned that if the file glob is not quoted the shell file expansion will take over.'
+        type: 'string',
+        description: 'Takes a csv file as value. Play the same request for each set of variables created for each line in the csv file. The csv header is expected to specify the variable names.'
     })
     .argv;
 
@@ -59,27 +64,11 @@ function processVars(vars) {
     return result;
 }
 
-function processPlay(play, vars) {
-    if (!play || !play.length) return play;
-    let i = 0, l = play.length;
-    for (;i<l;i++) {
-        if (play[i].startsWith('-')) break;
-    }
-    if (i < l) {
-        // found options inside play?
-        Object.assign(vars, processVars(play.slice(i)));
-        return play.slice(0,i);
-    }
-    return play;
-}
 
 // only --opt unknown options are accepted and are assumed to be vars defined on command line
 // if no vars are defiend {} is returned
 const vars = processVars(argv._);
 
-// array  opts are collecting everything so we need to extract the unknown keys starting with --
-// and move them inside _. Because, the user may define a variable after the '--play files' option
-const play = processPlay(argv.play, vars);
 
 Client.play({
     file: argv.file,
@@ -87,5 +76,9 @@ Client.play({
     quiet: argv.quiet,
     all: argv.all,
     vars: vars,
-    play: play
+    env: argv.env,
+    play: argv.play
+}).catch(e => {
+    console.error(e);
+    process.exit(2);
 });
