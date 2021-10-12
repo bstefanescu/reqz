@@ -1,6 +1,6 @@
 {
   "name": "reqz",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "Automate chains of requests to help test and develop rest apps",
   "main": "lib/client.js",
   "bin": {

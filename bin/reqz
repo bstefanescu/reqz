@@ -34,6 +34,10 @@ const argv = yargs(hideBin(process.argv))
         type: 'string',
         description: 'Takes a csv file as value. Play the same request for each set of variables created for each line in the csv file. The csv header is expected to specify the variable names.'
     })
+    .option('with', {
+        type: 'string',
+        description: 'To be used in conjunction with play. Provide a transfirmer fucntion name to be used to transform records from the csv file. The fucntion must be exported by the scripts.js file and take an the record as an argument and should return a record object (may be the same object as the input)'
+    })
     .argv;
 
 
@@ -77,7 +81,8 @@ Client.play({
     all: argv.all,
     vars: vars,
     env: argv.env,
-    play: argv.play
+    play: argv.play,
+    with: argv.with
 }).catch(e => {
     console.error(e);
     process.exit(2);
