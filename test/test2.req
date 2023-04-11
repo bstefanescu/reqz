@@ -1,0 +1,5 @@
+
+
+@run ./test.req
+@echo Environment is in test2:
+@inspect $env

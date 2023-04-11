@@ -1,0 +1,3 @@
+@lib ../test.js
+
+@set apiUrl = "http://localhost:8090/api/v1"

@@ -1,37 +1,40 @@
 {
   "name": "reqz",
-  "version": "0.6.2",
-  "description": "Automate chains of requests to help test and develop rest apps",
-  "main": "lib/client.js",
+  "version": "0.9.0",
+  "description": "Requests automation",
+  "main": "lib/index.js",
+  "files": [
+    "./lib",
+    "./src",
+    "./bin"
+  ],
+  "type": "module",
   "bin": {
-    "reqz": "./bin/reqz"
+    "reqz": "./lib/client/index.js"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "rimraf ./lib ./dist && tsc --project ./tsconfig.json",
+    "test": "mocha",
+    "lint": "eslint --ext .ts .",
+    "dist": "npm run lint && npm run build",
+    "prepublishOnly": "npm run dist"
   },
-  "keywords": [
-    "request",
-    "rest",
-    "automation",
-    "chain",
-    "flow",
-    "test",
-    "post"
-  ],
   "author": "Bogdan Stefanescu <stefanescu.bogdan@gmail.com>",
   "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/bstefanescu/reqz.git"
+  "devDependencies": {
+    "@types/node": "^18.15.11",
+    "@types/superagent": "^4.1.16",
+    "@types/yargs": "^17.0.24",
+    "@typescript-eslint/eslint-plugin": "^5.58.0",
+    "eslint": "^8.38.0",
+    "eslint-plugin-require-extensions": "^0.1.3",
+    "rimraf": "^5.0.0",
+    "typescript": "^5.0.2"
   },
-  "bugs": {
-    "url": "https://github.com/bstefanescu/reqz/issues"
-  },
-  "homepage": "https://github.com/bstefanescu/reqz#readme",
   "dependencies": {
-    "chalk": "^4.1.2",
-    "csv-parse": "^4.16.3",
-    "superagent": "^6.1.0",
-    "yargs": "^17.2.1"
+    "chalk": "^5.2.0",
+    "commander": "^10.0.0",
+    "csv-parse": "^5.3.6",
+    "superagent": "^8.0.9"
   }
 }
