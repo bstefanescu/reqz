@@ -5,8 +5,7 @@
   "main": "lib/index.js",
   "files": [
     "./lib",
-    "./src",
-    "./bin"
+    "./src"
   ],
   "type": "module",
   "bin": {
