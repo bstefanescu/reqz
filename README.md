@@ -95,7 +95,7 @@ Content-Type: application/octet-stream
 You can add comments by starting aline with a `#` character:
 
 ```
-\# List the existing users
+# List the existing users
 GET https://my.server.com/api/v1/users
 ```
 
@@ -252,7 +252,7 @@ GET {{apiUrl}}/protected-endpoint
 
 ```
 @set apiUrl = "https://my.server.com/api/v1"
-\# the username and password are specified on the command line as --username and --password
+# the username and password are specified on the command line as --username and --password
 @set auth = `{{username}}:{{password}}`
 
 @headers
