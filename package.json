@@ -1,15 +1,16 @@
 {
   "name": "reqz",
-  "version": "0.9.0",
-  "description": "Requests automation",
-  "main": "lib/index.js",
+  "version": "0.9.2",
+  "description": "Requests automation for REST APIs",
+  "main": "lib/client/index.js",
   "files": [
     "./lib",
-    "./src"
+    "./src",
+    "./bin"
   ],
   "type": "module",
   "bin": {
-    "reqz": "./lib/client/index.js"
+    "reqz": "./bin/reqz.mjs"
   },
   "scripts": {
     "build": "rimraf ./lib ./dist && tsc --project ./tsconfig.json",
@@ -20,6 +21,24 @@
   },
   "author": "Bogdan Stefanescu <stefanescu.bogdan@gmail.com>",
   "license": "MIT",
+  "tags": [
+    "http",
+    "rest",
+    "api",
+    "test",
+    "request",
+    "automation",
+    "cli"
+  ],
+  "homepage": "https://github.com/bstefanescu/reqz#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bstefanescu/reqz"
+  },
+  "bugs": {
+    "url": "https://github.com/bstefanescu/reqz/issues",
+    "email": "stefanescu.bogdan@gmail.com"
+  },
   "devDependencies": {
     "@types/node": "^18.15.11",
     "@types/superagent": "^4.1.16",
