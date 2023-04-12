@@ -1,6 +1,6 @@
 # Reqz
 
-Request Automation for REST APIs. Useful to test / debug rest APIs.
+Request Automation for REST APIs. Useful to test / debug REST APIs.
 
 **Installation**: `npm -g install reqz`
 **Requirements**: ES2020 `( >= node 14.5.0)`
@@ -38,11 +38,11 @@ A minimal reuqest file is a regular HTTP request:
 - The HTTP request line on one line: `GET https://my.server.com/path`
 - One or more optional lines to specify the HTTP headers to send. The headers must not be separated by empty lines. 
 - an optional body separated from the request lines. 
-```
+
 
 The supported HTTP methos are: `GET`, `POST`, `PUT`, `DELETE`, `OPTIONS`, `HEAD`, `PATCH`, `TRACE` and `CONNECT`
 
-Examples: 
+**Examples:**
 
 ```
 GET https://my.server.com/api/v1/users
