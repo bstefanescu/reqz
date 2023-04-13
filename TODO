@@ -1,0 +1,24 @@
+update docs: 
+@lib => @import
+filters -> builtins only base64 preserved
+optional
+query
+
+==== OK
+@run file.req using {
+    key: value
+}
+
+==== OK
+all the directives + url + method can use "", '', `` or not surrounded strings
+@import "file"
+@run "file"
+@run `file${ext}` 
+@run file${ext} 
+
+==== OK
+@headers {
+    ...,
+    'Content-Type': 'application/json'
+}
+
