@@ -3,12 +3,16 @@ import EchoDirective from "./Echo.js";
 import SetHeaderDirective from "./Header.js";
 import SetHeadersDirective from "./Headers.js";
 import IncludeDirective from "./Include.js";
-import LibDirective from "./Lib.js";
+import ImportDirective from "./Import.js";
 import { RequestDirective } from "./Request.js";
 import RunDirective from "./Run.js";
 import SetVarDirective from "./SetVar.js";
 import { IDirective } from "../Directive.js";
 import InspectDirective from "./Inspect.js";
+import SetQueryDirective from "./Query.js";
+import OptionalDirective from "./Optional.js";
+import PromptDirective from "./Prompt.js";
+import RequiredDirective from "./Required.js";
 
 const requestDirective = new RequestDirective();
 const directives: Record<string, IDirective> = {
@@ -22,7 +26,11 @@ const directives: Record<string, IDirective> = {
     "CONNECT": requestDirective,
     "TRACE": requestDirective,
 
+    "@optional": new OptionalDirective(),
+    "@required": new RequiredDirective(),
+    "@prompt": new PromptDirective(),
     "@set": new SetVarDirective(),
+    "@query": new SetQueryDirective(),
     "@header": new SetHeaderDirective(),
     "@headers": new SetHeadersDirective(),
     "@include": new IncludeDirective(),
@@ -30,7 +38,7 @@ const directives: Record<string, IDirective> = {
     "@call": new CallDirective(),
     "@echo": new EchoDirective(),
     "@inspect": new InspectDirective(),
-    "@lib": new LibDirective(),
+    "@import": new ImportDirective(),
 }
 
 export default directives;

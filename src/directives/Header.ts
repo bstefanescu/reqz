@@ -7,6 +7,9 @@ export default class SetHeaderDirective extends LineDirective {
         if (i < -1) {
             throw new Error(`Invalid header directive. Expecting a ":" character: ${arg}`);
         }
-        module.setHeaderExpr(arg.substring(0, i).trim(), arg.substring(i + 1).trim());
+        const name = arg.substring(0, i).trim();
+        const value = arg.substring(i + 1).trim();
+        if (!arg) throw new Error('Missing argument for @header directive');
+        module.setHeaderExpr(name, value);
     }
 }

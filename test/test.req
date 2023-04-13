@@ -1,9 +1,17 @@
 
-@include ./env/{{env?"dev"}}.req 
+@optional version
+@optional env
+
+@include ./env/${env||"dev"}.req 
 
 @echo Environment is:
 @inspect $env
 
 @call debug
 
-GET {{apiUrl}}
+@query {
+    version,
+    all: true
+}
+
+GET ${apiUrl}

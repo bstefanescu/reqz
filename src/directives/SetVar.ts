@@ -1,30 +1,33 @@
-import { LineDirective } from "../Directive.js";
-import { Environment, IEvaluable, parseAssignableExpression } from "../Expression.js";
-import type { IRunnable } from "../RequestModule.js";
+import { BlockDirective } from "../Directive.js";
+import Environment from "../Enviroment.js";
+import { IEvaluable, parseExpression } from "../Expression.js";
+import type { ICommand } from "../RequestModule.js";
 import RequestModule from "../RequestModule.js";
 
-export default class SetVarDirective extends LineDirective {
-    build(module: RequestModule, arg: string): void {
-        const i = arg.indexOf('=');
+export default class SetVarDirective extends BlockDirective {
+    build(module: RequestModule, arg: string, lines: string[]): void {
+        const content = (arg + '\n' + lines.join('\n')).trim();
+        if (!content) throw new Error('Missing argument for @set directive');
+
+        const i = content.indexOf('=');
         if (i < -1) {
-            throw new Error(`Invalid header directive. Expecting a "=" character: ${arg}`);
+            throw new Error(`Invalid header directive. Expecting a "=" character: ${content}`);
         }
         let k: number, Command: typeof SetOptVarCommand | typeof SetVarCommand;
-        if (arg[i - 1] === '?') {
+        if (content[i - 1] === '?') {
             k = i - 1;
             Command = SetOptVarCommand;
         } else {
             k = i;
             Command = SetVarCommand;
         }
-        const name = arg.substring(0, k).trim();
-        const value = parseAssignableExpression(arg.substring(i + 1).trim());
+        const name = content.substring(0, k).trim();
+        const value = parseExpression(content.substring(i + 1).trim());
         module.commands.push(new Command(name, value));
-
     }
 }
 
-class SetVarCommand implements IRunnable {
+class SetVarCommand implements ICommand {
     constructor(private name: string, private value: IEvaluable) {
     }
     run(env: Environment): void {
@@ -32,7 +35,7 @@ class SetVarCommand implements IRunnable {
     }
 }
 
-class SetOptVarCommand implements IRunnable {
+class SetOptVarCommand implements ICommand {
     constructor(private name: string, private value: IEvaluable) {
     }
     run(env: Environment): void {

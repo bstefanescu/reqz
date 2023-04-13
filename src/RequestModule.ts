@@ -1,10 +1,11 @@
 import { dirname, resolve } from "path";
-import { Environment, TemplateString } from "./Expression.js";
+import { Expression, parseBodyExpression, parseObjectExpression, parseStringExpression } from "./Expression.js";
 import { ILogger, Logger } from "./Logger.js";
 import Parser from "./parse/Parser.js";
 import { IRequest, request } from "./http.js";
+import Environment from "./Enviroment.js";
 
-export interface IRunnable<T = void> {
+export interface ICommand<T = void> {
     run(env: Environment): T;
 }
 
@@ -15,7 +16,7 @@ export default class RequestModule {
     file?: string;
     logger: ILogger;
     parent?: RequestModule;
-    commands = new Array<IRunnable>();
+    commands = new Array<ICommand>();
 
     constructor(logger?: ILogger, parent?: RequestModule) {
         this.logger = logger || new Logger();
@@ -34,13 +35,13 @@ export default class RequestModule {
             });
         this.commands.push({
             run: (env) => {
-                Object.assign(env.functions, functions);
+                env.loadVars(functions);
             }
         });
     }
 
     setHeaderExpr(name: string, value: string) {
-        const expr = TemplateString.parse(value);
+        const expr = parseStringExpression(value);
         this.commands.push({
             run: (env) => {
                 env.headers[name] = expr.eval(env);
@@ -57,10 +58,10 @@ export default class RequestModule {
     }
 
     setBodyExpr(value: string) {
-        const expr = TemplateString.parse(value);
+        const expr = parseBodyExpression(value);
         this.commands.push({
             run: (env) => {
-                env.body = expr.eval(env);
+                expr && (env.body = expr.eval(env));
             }
         });
     }
@@ -73,8 +74,27 @@ export default class RequestModule {
         });
     }
 
+    setQueryExpr(value: string) {
+        value = value.trim();
+        if (!value.startsWith('{')) {
+            throw new Error('Invalid query expression. Expecting an object.');
+        }
+        const expr = parseObjectExpression(value);
+        this.commands.push({
+            run: (env) => {
+                env.query = expr.eval(env);
+            }
+        });
+    }
+    setQuery(value: Record<string, any>) {
+        this.commands.push({
+            run: (env) => {
+                env.query = value;
+            }
+        });
+    }
     setUrlExpr(value: string) {
-        const expr = TemplateString.parse(value);
+        const expr = parseStringExpression(value);
         this.commands.push({
             run: (env) => {
                 env.url = expr.eval(env);
@@ -120,11 +140,18 @@ export default class RequestModule {
         if (!env.url) {
             throw new Error('Missing request URL');
         }
-        const response = await request(env as IRequest);
+        const url = buildUrl(env.url, env.query);
+        const req = {
+            url: url.toString(),
+            method: env.method,
+            headers: env.headers,
+            body: env.body
+        }
+        const response = await request(req);
         if (this.parent) {
-            this.logger.logChildRequest(env as IRequest, response);
+            this.logger.logChildRequest(req, response);
         } else {
-            this.logger.logRequest(env as IRequest, response);
+            this.logger.logRequest(req, response);
         }
         return response;
     }
@@ -145,4 +172,21 @@ export default class RequestModule {
         return this.cwd ? resolve(this.cwd, file) : resolve(file);
     }
 
+}
+
+function buildUrl(path: string, query?: Record<string, any>) {
+    const url = new URL(path);
+    if (query) {
+        for (const key of Object.keys(query)) {
+            const val = query[key];
+            if (val != null) {
+                if (Array.isArray(val)) {
+                    url.searchParams.set(key, val.map(v => String(v)).join(','));
+                } else {
+                    url.searchParams.set(key, String(val));
+                }
+            }
+        }
+    }
+    return url;
 }

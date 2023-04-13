@@ -1,7 +1,15 @@
 
+export const TOK_NULL = 0;
+export const TOK_BOOLEAN = 1;
+export const TOK_NUMBER = 2;
+export const TOK_STRING = 3;
+export const TOK_VAR = 4;
+export const TOK_EXPR = 5;
+
 export interface IToken<V> {
     value: V, //IVarExprTokens | string[] | string | number | boolean | null,
-    remaining: string
+    remaining: string;
+    type: number;
 }
 
 export interface IVarExprTokens {
@@ -32,6 +40,7 @@ export function readVarRef(text: string): IToken<string[]> | null {
         return {
             value: token.split('.'),
             remaining: text.substring(m[0].length),
+            type: TOK_VAR
         }
     } else {
         return null; // not a valid var ref
@@ -42,9 +51,22 @@ const SYMBOL_RX = /^\s*(true\b)|(false\b)|(null\b)\s*/
 export function readSymbol(text: string): IToken<boolean | null> | null {
     const m = SYMBOL_RX.exec(text);
     if (m) {
+        let type: number;
+        let value: boolean | null;
+        if (m[1]) {
+            type = TOK_BOOLEAN;
+            value = true;
+        } else if (m[2]) {
+            type = TOK_BOOLEAN;
+            value = false;
+        } else {
+            type = TOK_NULL;
+            value = null;
+        }
         return {
-            value: m[1] ? true : (m[2] ? false : null),
+            value,
             remaining: text.substring(m[0].length),
+            type
         }
     } else {
         return null;
@@ -58,6 +80,7 @@ export function readSingleQuotedString(text: string): IToken<string> | null {
         return {
             value: JSON.parse('"' + m[1] + '"'),
             remaining: text.substring(m[0].length),
+            type: TOK_STRING
         }
     } else {
         return null;
@@ -70,7 +93,8 @@ export function readDoubleQuotedString(text: string): IToken<string> | null {
     if (m) {
         return {
             value: JSON.parse('"' + m[1] + '"'),
-            remaining: text.substring(m[0].length)
+            remaining: text.substring(m[0].length),
+            type: TOK_STRING
         };
     } else {
         return null;
@@ -83,7 +107,8 @@ export function readNumber(text: string): IToken<number> | null {
     if (m) {
         return {
             value: parseFloat(m[1]),
-            remaining: text.substring(m[0].length)
+            remaining: text.substring(m[0].length),
+            type: TOK_NUMBER
         };
     } else {
         return null;
@@ -114,7 +139,7 @@ export function readVarExpr(text: string): IToken<IVarExprTokens> | null {
     }
     const result: IVarExprTokens = { varRef: varToken.value }
     text = varToken.remaining;
-    if (!text) return { value: result, remaining: text };
+    if (!text) return { value: result, remaining: text, type: TOK_EXPR };
 
     if (text[0] === '?') { // a default value
         text = text.substring(1);
@@ -124,7 +149,7 @@ export function readVarExpr(text: string): IToken<IVarExprTokens> | null {
         }
         result.defaultValue = valueToken.value;
         text = valueToken.remaining;
-        if (!text) return { value: result, remaining: text };
+        if (!text) return { value: result, remaining: text, type: TOK_EXPR };
     }
 
     if (text[0] === '|') { // a filter
@@ -132,6 +157,6 @@ export function readVarExpr(text: string): IToken<IVarExprTokens> | null {
         result.filters = text.split(/\s*\|\s*/);
     }
     //TODO filter must be matched using a regex and remaining should be set
-    return { value: result, remaining: '' };
+    return { value: result, remaining: '', type: TOK_EXPR };
 }
 

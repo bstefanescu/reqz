@@ -1,21 +1,166 @@
-import builtinFilters from "./filters.js";
-import { IVarExprTokens, readLiteral, readVarExpr } from "./parse/expression.js";
+import vm from 'vm';
+import Environment from "./Enviroment.js";
+import builtinFilters from "./builtins.js";
+import { IVarExprTokens, readDoubleQuotedString, readLiteral, readVarExpr } from "./parse/expression.js";
+import { readSingleQuotedString } from './parse/expression.js';
 
 
 export interface IEvaluable {
     eval(env: Environment): any;
 }
 
-export class Environment {
-    vars: Record<string, any>;
-    functions: Record<string, (arg: any) => any> = { ...builtinFilters };
-    method?: string;
-    url?: string;
-    headers: Record<string, string> = {};
-    body?: string;
-    constructor(vars: Record<string, any>) {
-        this.vars = vars || {};
+
+
+export class Literal implements IEvaluable {
+    constructor(public value: any) {
     }
+    eval() {
+        return this.value;
+    }
+}
+
+export class Expression implements IEvaluable {
+    script: vm.Script;
+    constructor(expr: string) {
+        this.script = new vm.Script('(' + expr + ')');
+    }
+    eval(env: Environment) {
+        return env.eval(this.script);
+    }
+}
+
+function hasVarSubstitutions(text: string) {
+    const i = text.indexOf('${');
+    if (i > -1) {
+        const j = text.indexOf('}', i + 2);
+        if (j > -1) {
+            return true;
+        }
+    }
+    return false;
+}
+
+export function parseStringLiteral(text: string) {
+    text = text.trim();
+    if (!text) {
+        throw new Error('Invalid empty expression');
+    }
+    const first = text[0];
+    if (first === '"') {
+        const token = readDoubleQuotedString(text);
+        if (!token || token.remaining) {
+            throw new Error('Invalid expression: ' + text);
+        }
+        return token.value;
+    } else if (first === "'") {
+        const token = readSingleQuotedString(text);
+        if (!token || token.remaining) {
+            throw new Error('Invalid expression: ' + text);
+        }
+        return token.value;
+    } else {
+        // a string not surrounded by quotes or backticks
+        return text;
+    }
+}
+
+export function parseExpression(text: string) {
+    text = text.trim();
+    if (!text) {
+        throw new Error('Invalid empty expression');
+    }
+    const first = text[0];
+    if (first === '`' || first === '{' || first === '[') {
+        return new Expression(text);
+    } else if (first === '"') {
+        const token = readDoubleQuotedString(text);
+        if (!token || token.remaining) {
+            throw new Error('Invalid expression: ' + text);
+        }
+        return new Literal(token.value);
+    } else if (first === "'") {
+        const token = readSingleQuotedString(text);
+        if (!token || token.remaining) {
+            throw new Error('Invalid expression: ' + text);
+        }
+        return new Literal(token.value);
+    } else if (text === 'true') {
+        return new Literal(true);
+    } else if (text == 'false') {
+        return new Literal(false);
+    } else if (text === 'null') {
+        return new Literal(null);
+    } else {
+        return new Expression(text);
+    }
+}
+
+export function parseStringExpression(text: string) {
+    text = text.trim();
+    if (!text) {
+        throw new Error('Invalid empty expression');
+    }
+    const first = text[0];
+    if (first === '`' || first === '{' || first === '[') {
+        return new Expression(text);
+    } else if (first === '"') {
+        const token = readDoubleQuotedString(text);
+        if (!token || token.remaining) {
+            throw new Error('Invalid expression: ' + text);
+        }
+        return new Literal(token.value);
+    } else if (first === "'") {
+        const token = readSingleQuotedString(text);
+        if (!token || token.remaining) {
+            throw new Error('Invalid expression: ' + text);
+        }
+        return new Literal(token.value);
+    } else {
+        // a string not ssurrounded by quotes or backticks
+        return hasVarSubstitutions(text) ? new Expression('`' + text + '`') : new Literal(text);
+    }
+}
+
+export function parseBodyExpression(text: string) {
+    text = text.trim();
+    if (!text) {
+        return undefined;
+    }
+    const first = text[0];
+    if (first === '{' || first === '[') {
+        // a json object or array
+        return new Expression(text);
+    } else if (hasVarSubstitutions(text)) {
+        new Expression('`' + text + '`');
+    } else {
+        return new Literal(text);
+    }
+}
+
+export function parseObjectExpression(text: string) {
+    text = text.trim();
+    if (!text) {
+        throw new Error('Invalid empty expression');
+    }
+    const first = text[0];
+    if (first === '{') {
+        // a json object
+        return new Expression(text);
+    } else {
+        throw new Error('Invalid object expression: ' + text);
+    }
+}
+
+export function parseVarRef(expr: string) {
+    expr = expr.trim();
+    if (!expr) {
+        throw new Error('Invalid empty variable reference');
+    }
+    const token = readVarExpr(expr);
+    if (!token) {
+        throw new Error('Invalid variable: ' + expr);
+    }
+    return new VarExpr(token.value);
 }
 
 function resolveVar(parts: string[], vars: Record<string, any>, root: any) {
@@ -49,7 +194,7 @@ function resolveVarExpr(expr: IVarExprTokens, env: Environment) {
     }
     if (expr.filters) {
         for (const filter of expr.filters) {
-            const fn = env.functions[filter];
+            const fn = env.getFunction(filter);
             if (!fn) {
                 throw new Error('filter not found: ' + filter);
             }
@@ -59,21 +204,6 @@ function resolveVarExpr(expr: IVarExprTokens, env: Environment) {
     return obj;
 }
 
-
-export class Literal implements IEvaluable {
-    value: any;
-    constructor(value: any) {
-        this.value = value;
-    }
-    eval() {
-        return this.value;
-    }
-    static parse(value: string) {
-        return new Literal(JSON.parse(value));
-    }
-
-}
-
 export class VarExpr implements IEvaluable {
     constructor(public expr: IVarExprTokens) { }
 
@@ -81,77 +211,4 @@ export class VarExpr implements IEvaluable {
         return resolveVarExpr(this.expr, env);
     }
 
-    static parse(expr: string): IEvaluable {
-        const token = readVarExpr(expr);
-        if (!token) {
-            throw new Error('Invalid var expression: ' + expr);
-        }
-        return new VarExpr(token.value);
-    }
-
-}
-
-// string interpolation
-export class TemplateString implements IEvaluable {
-    constructor(public parts: IEvaluable[]) {
-    }
-    eval(env: Environment) {
-        return this.parts.map(part => part.eval(env)).join('');
-    }
-
-    static parse(text: string) {
-        let i = text.indexOf('{{');
-        if (i > -1) {
-            const parts: IEvaluable[] = [];
-            let j = text.indexOf('}}', i);
-            while (i > -1 && j > -1) {
-                if (i > 0) {
-                    parts.push(new Literal(text.substring(0, i)));
-                }
-                parts.push(VarExpr.parse(text.substring(i + 2, j)));
-                text = text.substring(j + 2);
-                i = text.indexOf('{{');
-                j = text.indexOf('}}', i);
-            }
-            if (text) {
-                parts.push(new Literal(text));
-            }
-            return new TemplateString(parts);
-        } else {
-            return new Literal(text);
-        }
-    }
-}
-
-// this can be either a var expression, a literal, either a template string surrounded with ticks `expr`
-// the text is trimmed
-export function parseAssignableExpression(text: string) {
-    text = text.trim();
-
-    if (text[0] === "`") {
-        if (text[text.length - 1] !== "`") {
-            throw new Error('Invalid template string. Expecting an ending tick: ' + text);
-        }
-        return TemplateString.parse(text.substring(1, text.length - 1));
-    }
-
-    // may be a literal?
-    const literalToken = readLiteral(text);
-    if (literalToken) {
-        if (literalToken.remaining) {
-            throw new Error('Invalid value: ' + text);
-        }
-        return new Literal(literalToken.value);
-    }
-
-    // may be a var expression?
-    const token = readVarExpr(text);
-    if (token) {
-        if (token.remaining) {
-            throw new Error('Invalid value: ' + text);
-        }
-        return new VarExpr(token.value);
-    }
-
-    throw new Error('Invalid value: ' + text);
 }
