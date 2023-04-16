@@ -36,7 +36,7 @@ You can use any extension yout want for you request files. Like `.req`, `.rq`, `
 
 ### The minimal request
 
-A minimal reuqest file is a regular HTTP request composed from: 
+A minimal request file is a regular HTTP request composed from: 
 - A HTTP request line: `GET https://my.server.com/path`
 - One or more optional lines to specify the HTTP headers to send. The headers must not be separated by empty lines. 
 - An optional body separated by an empty line from the request or request header lines. 
@@ -66,12 +66,12 @@ Content-Type: application/json
 }
 ```
 
-The request URL and the header values support variable substitution using javascript template literals. The template literals are not required to be surrounded by backticks characters. You can also use double quetoed or single qouted strings as values. The request body accept any javascript expression. Like for example an object to post JSON data. 
+The request URL and the header values support template literals as values (i.e. variable substitution). The template literals are not required to be surrounded by backticks characters. You can also use double quoted or single qouted strings as values. The request body accept any javascript expression. Like for example an object to post JSON data. 
 
 Here is an example:
 
 ```
-POST https://my.server.com/api/v1/users
+PUT https://my.server.com/api/v1/users/${userId}
 Accept: application/json
 Content-Type: application/json
 Authorization: Bearer ${base64(username+':'+password)}
