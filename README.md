@@ -93,15 +93,6 @@ Content-Type: application/octet-stream
 
 **Note** that the `@file` directive doesn't support variable substitution.
 
-### Comments
-
-You can add comments by starting aline with a `#` character:
-
-```
-# List the existing users
-GET https://my.server.com/api/v1/users
-```
-
 ### Variables
 
 We already seen we can pass variables from the command line. Use the double mustache notation to use the variable in the file: 
@@ -146,6 +137,15 @@ Authorization: Basic {{auth | base64}}
 ```
 
 There are a few built-in filters: `json`, `base64`, `trim`, 'lowercase', 'uppercase'. You can define your own filters and load them using the `@lib` directive.
+
+### Comments
+
+You can add comments by starting aline with a `#` character:
+
+```
+# List the existing users
+GET https://my.server.com/api/v1/users
+```
 
 ## Directives
 
