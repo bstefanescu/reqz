@@ -3,6 +3,7 @@
 Request Automation for REST APIs. Useful to test / debug REST APIs.
 
 **Installation**: `npm -g install reqz`
+
 **Requirements**: ES2020 `( >= node 14.5.0)`
 
 The application is executing requests described using `reqz` request files.
@@ -27,17 +28,18 @@ The application is executing requests described using `reqz` request files.
 
 Any other option starting woith '--' that is not a built-in option will be added as a variable to the request environment:
 
-`reqz ./get-user-by-email.req --email johndoe@foobar.com`
+`reqz ./get-user-by-email.req --email john@doe.com`
 
 ## Request file anatomy 
 
-You can use any extension yout want for you request files. LIke `.req`, `.rq`, `.reqz` etc.
+You can use any extension yout want for you request files. Like `.req`, `.rq`, `.reqz` etc.
 
 ### The minimal request
-A minimal reuqest file is a regular HTTP request: 
-- The HTTP request line on one line: `GET https://my.server.com/path`
+
+A minimal reuqest file is a regular HTTP request composed from: 
+- A HTTP request line: `GET https://my.server.com/path`
 - One or more optional lines to specify the HTTP headers to send. The headers must not be separated by empty lines. 
-- an optional body separated from the request lines. 
+- An optional body separated by an empty line from the request or request header lines. 
 
 
 The supported HTTP methos are: `GET`, `POST`, `PUT`, `DELETE`, `OPTIONS`, `HEAD`, `PATCH`, `TRACE` and `CONNECT`
@@ -64,22 +66,23 @@ Content-Type: application/json
 }
 ```
 
-Both the body and the header values support variable substituion using `reqz` expressions. 
+The request URL and the header values support variable substitution using javascript template literals. The template literals are not required to be surrounded by backticks characters. You can also use double quetoed or single qouted strings as values. The request body accept any javascript expression. Like for example an object to post JSON data. 
+
 Here is an example:
 
 ```
 POST https://my.server.com/api/v1/users
 Accept: application/json
 Content-Type: application/json
-Authorization: Bearer {{auth | base64}}
+Authorization: Bearer ${base64({username+':'+password)}
 
 {
-    name: {{name}},
-    email: {{email}},
+    name: name,
+    email: email,
 }
 ```
 
-You can also POST a file content as a body. But in that case the file content will not be processed for variable substiution. To post a file use the soecial `@file` directive (which is only useable in the request body):
+You can also POST a file content as a body. But in that case the file content will not be processed for variable substitution. To post a file use the soecial `@file` directive (which is only usable in the request body):
 
 ```
 POST https://my.server.com/api/v1/users
@@ -88,7 +91,7 @@ Content-Type: application/octet-stream
 @file 'path/to/some/content'
 ```
 
-**Note** that the `@file` directive doesn;t support variable substitution.
+**Note** that the `@file` directive doesn't support variable substitution.
 
 ### Comments
 
