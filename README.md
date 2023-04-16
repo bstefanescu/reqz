@@ -74,7 +74,7 @@ Here is an example:
 POST https://my.server.com/api/v1/users
 Accept: application/json
 Content-Type: application/json
-Authorization: Bearer ${base64({username+':'+password)}
+Authorization: Bearer ${base64(username+':'+password)}
 
 {
     name: name,
