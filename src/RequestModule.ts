@@ -1,12 +1,20 @@
 import { dirname, resolve } from "path";
-import { Expression, parseBodyExpression, parseObjectExpression, parseStringExpression } from "./Expression.js";
-import { ILogger, Logger } from "./Logger.js";
-import Parser from "./parse/Parser.js";
-import { IRequest, request } from "./http.js";
 import Environment from "./Enviroment.js";
+import { parseBodyExpression, parseObjectExpression, parseStringExpression } from "./Expression.js";
+import { ILogger, Logger } from "./Logger.js";
+import { request } from "./http.js";
+import Parser from "./parse/Parser.js";
+import { IPrompt, IPrompter } from "./prompt.js";
+
+let prompterInstance: IPrompter;
 
 export interface ICommand<T = void> {
     run(env: Environment): T;
+}
+
+export interface IVar {
+    name: string;
+    required: boolean;
 }
 
 export default class RequestModule {
@@ -16,15 +24,18 @@ export default class RequestModule {
     file?: string;
     logger: ILogger;
     parent?: RequestModule;
+    vars: IVar[] = []; // declared vars
     commands = new Array<ICommand>();
+    isIncluded: boolean;
 
-    constructor(logger?: ILogger, parent?: RequestModule) {
+    constructor(logger?: ILogger, parent?: RequestModule, isIncluded = false) {
         this.logger = logger || new Logger();
         this.parent = parent;
+        this.isIncluded = isIncluded;
     }
 
-    spawn() {
-        return new RequestModule(this.logger, this);
+    spawn(isIncluded = false) {
+        return new RequestModule(this.logger, this, isIncluded);
     }
 
     async importLib(file: string) {
@@ -123,6 +134,11 @@ export default class RequestModule {
     }
 
     async execWithEnv(env: Environment) {
+        for (const v of this.vars) {
+            if (!v.required && !(v.name in env.vars)) {
+                env.vars[v.name] = undefined;
+            }
+        }
         for (const command of this.commands) {
             await command.run(env);
         }
@@ -170,6 +186,21 @@ export default class RequestModule {
 
     resolveFile(file: string) {
         return this.cwd ? resolve(this.cwd, file) : resolve(file);
+    }
+
+    get prompter() {
+        if (!prompterInstance) {
+            throw new Error("No prompter was installed");
+        }
+        return prompterInstance;
+    }
+
+    prompt(prompts: IPrompt[]) {
+        return this.prompter.ask(prompts);
+    }
+
+    static usePrompter(prompter: IPrompter) {
+        prompterInstance = prompter;
     }
 
 }

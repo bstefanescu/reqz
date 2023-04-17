@@ -1,8 +1,13 @@
 
-@optional version
-@optional env
+@var yyy?, env?, version?
 
+@echo ${yyy}
 @include ./env/${env||"dev"}.req 
+
+@prompt xxx : "Your name? "
+
+@echo === ${xxx}
+
 
 @echo Environment is:
 @inspect $env
@@ -10,7 +15,7 @@
 @call debug
 
 @query {
-    version,
+    version: version,
     all: true
 }
 

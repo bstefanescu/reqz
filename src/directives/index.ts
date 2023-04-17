@@ -10,9 +10,8 @@ import SetVarDirective from "./SetVar.js";
 import { IDirective } from "../Directive.js";
 import InspectDirective from "./Inspect.js";
 import SetQueryDirective from "./Query.js";
-import OptionalDirective from "./Optional.js";
+import VarDirective from "./Var.js";
 import PromptDirective from "./Prompt.js";
-import RequiredDirective from "./Required.js";
 
 const requestDirective = new RequestDirective();
 const directives: Record<string, IDirective> = {
@@ -26,8 +25,7 @@ const directives: Record<string, IDirective> = {
     "CONNECT": requestDirective,
     "TRACE": requestDirective,
 
-    "@optional": new OptionalDirective(),
-    "@required": new RequiredDirective(),
+    "@var": new VarDirective(),
     "@prompt": new PromptDirective(),
     "@set": new SetVarDirective(),
     "@query": new SetQueryDirective(),

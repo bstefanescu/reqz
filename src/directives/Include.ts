@@ -10,7 +10,7 @@ export default class IncludeDirective extends LineDirective {
         module.commands.push({
             async run(env: Environment): Promise<void> {
                 const file = fileExpr.eval(env);
-                const child = module.spawn();
+                const child = module.spawn(true);
                 await child.loadFile(file);
                 await child.execWithEnv(env);
             }

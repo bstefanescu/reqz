@@ -5,6 +5,7 @@ import { Logger, QuietLogger } from "../Logger.js";
 import RequestModule from "../RequestModule.js";
 import pkg from "../package.js";
 import play from "./play.js";
+import TerminalPrompter from "../prompt.js";
 
 const NUMBER_RX = /^[+-]?\d+(\.\d+)?$/;
 
@@ -69,6 +70,9 @@ const csvFile = opts.play && resolve(opts.play);
 
 
 const logger = getLogger(opts.quiet, opts.all, opts.log);
+
+RequestModule.usePrompter(new TerminalPrompter());
+
 new RequestModule(logger).loadFile(reqFile).then((module: RequestModule) => {
     if (csvFile) {
         play(module, csvFile, vars, opts.colDelimiter || ',').catch(handleError);
