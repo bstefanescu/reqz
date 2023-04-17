@@ -123,6 +123,7 @@ There are 3 builtin variable names, that you should not use:
 2. `$response` - the response object of the last executed request. See `@run` directive
 3. `$play` - the current csv record when replaying a csv defining different values for the same variables (i.e. records). See `--play` flag.
 
+
 ### Expressions
 
 There 2 types of expressions:
@@ -153,15 +154,27 @@ Directives are special commands you can use inside a request file. To use a dire
 
 Here is the list of all of the supported directives:
 
+- @var
 - @set
+- @prompt
 - @include
+- @query
 - @header
 - @headers
 - @echo
 - @inspect
 - @run
-- @lib
+- @import
 - @call
+- @file
+
+
+### @var
+
+**Usage**: `@var userid, firstName?, lastName?
+
+Declare variable names used in the script file. Optional variables must be suffixed with an `?` character.
+As indicated above variables declaration is optional. If you want to avoid trowing errors when using an optional variable then you must declare the variable as optional.
 
 ### @set
 
