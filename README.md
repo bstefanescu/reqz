@@ -95,48 +95,48 @@ Content-Type: application/octet-stream
 
 ### Variables
 
-We already seen we can pass variables from the command line. Use the double mustache notation to use the variable in the file: 
+Variables can be defined on the command line using `--varName 'varValue'` arguments or can be set in the requets script file using the `@set` directive.
+There are 2 type of variables:
+1. required variables - the default one.
+2. optional variables. When using JSON like expression to set the request query or body, if a variable is not defined then an 'undefined variable' error will be thrown. To avoid this and to ignore setting the property which is not defined yoiu need to declare this variable as optional. 
+This can be done using the `@var` directiveby appending the '?' character to the variable name. The directive can be used to declare the required variables used in the file as well. Declaring required variables is optional but is recommended since IDE integration tools may use this information for generating autocompletion.
+
+**Example**
 
 ```
-GET https://my.server.com/api/v1/users?email={{email}}
+@var apiUrl, userId, userEmail, firstName?, lastName?
+@set apiUrl = 'https://my.server.com/api/v1'
+
+PUT ${apiUrl}/users/${userId}
+
+{
+  userEmail,
+  firstName,
+  lastName
+}
 ```
 
-You can also define variables inside the request file:
+If you don't define the `userEmail` when running the above script then an error is thrown. But this is not happening if you don't define fhe `firstName`, because it is defined as optional. Instead, the firdtName will be ignored and not included in the body object.
 
-```
-@set apiUrl="https://my.server.com/api/v1"
-
-GET {{apiUrl}}/users?email={{email}}
-```
-
-**Important:** when you use the `@set` directive you must double or single quotes to set string values.
-Go to the `@set` directive documentation for more info about the accepted values.
-
-There a re 3 builtin variable names, that you should not use:
+There are 3 builtin variable names, that you should not use:
 1. `$env` - the request environment - usefull to debug using `@inspect` directive
-2. `$response` - the lresponse object of the last executed request. See `@run` directive
+2. `$response` - the response object of the last executed request. See `@run` directive
 3. `$play` - the current csv record when replaying a csv defining different values for the same variables (i.e. records). See `--play` flag.
 
 ### Expressions
 
-A mustache expressions is composed from three parts:
+There 2 types of expressions:
+1. Literal values: "a double quoted string", 'a single quoted string', true, false, null, 123 (i.e. numbers), \``a template literal: Hello ${name}`\`.
+2. Javascript expression. Any `ES2020` javascript expression is supported. 
+3. String templates not surrounded by backticks. Example: `GET ${apiUrl}/users/${userId}`. These expression can be used in any directive that expects a string as its argument (if not explicitely stated in directive doc that it doesn't accept expressions) like: requets URLs, request header values, `@include`, `@echo` etc.
 
-1. a variable reference. that supports multi level properties using the dot character to access chiild properties. **Example:** `user` or `user.email`.
-2. An optional default value which is applied if the variable is null or undefined. The default value cannot be another variable but a literal (either a double / single quoted string a number or a boolean). To apply a defualt value you should use the append the value prefixed by the `?` character. 
-**Example:** `userName ? "john"`
-3. An optional set of filters that will be applied on the variable value. Use the pipe character `|` to specify the filters. 
-**Example:**  `user.email ? "john@doe.com" | trim | lowercase`
+Expressions are isloated and cannot access javascript globals. If you need to add your own functions to be acessed in expressions you can do so by using the `@import` directive.
 
-Here is another example using the `base64` fitler to set the Authorixzation header
+The only built-in fucntion available in the expressions scope is `base64`. This is usefull to generate basic authentication headers like:
 
 ```
-@set auth = `{{username}}:{{password}}`
-
-GET {{apiUrl}}/protected-endpoint
-Authorization: Basic {{auth | base64}}
+Authorization: Basic ${base64(username+':'+password)}
 ```
-
-There are a few built-in filters: `json`, `base64`, `trim`, 'lowercase', 'uppercase'. You can define your own filters and load them using the `@lib` directive.
 
 ### Comments
 
