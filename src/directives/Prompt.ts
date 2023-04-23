@@ -15,10 +15,7 @@ export default class PromptDirective extends BlockDirective {
                 let prompts = [];
                 for (const name in promptDefs) {
                     const pdef = promptDefs[name];
-                    let message: string;
-                    let type: boolean | string | undefined = undefined;
                     if (typeof pdef === 'string') {
-                        message = pdef;
                         prompts.push({ name, message: pdef, type: 'text' });
                     } else {
                         if (!pdef.message) {
