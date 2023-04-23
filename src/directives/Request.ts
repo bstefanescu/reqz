@@ -2,6 +2,7 @@ import { readFileSync } from "fs";
 import RequestModule from "../RequestModule.js";
 import { IDirective } from "../Directive.js";
 import { ILineParser } from "../parse/LineParser.js";
+import { parseStringLiteral } from "../Expression.js";
 
 
 export class RequestDirective implements IDirective {
@@ -43,7 +44,8 @@ class RequestBodyParser implements ILineParser {
             let body = this.lines.join('').trim();
             const m = FILE_RX.exec(body);
             if (m) {
-                body = readFileSync(module.resolveFile(m[1].trim()), 'utf8');
+                const value = parseStringLiteral(m[1].trim());
+                body = readFileSync(module.resolveFile(value), 'utf8');
                 module.setBody(body);
             } else {
                 module.setBodyExpr(body);

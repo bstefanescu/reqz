@@ -12,6 +12,7 @@ import InspectDirective from "./Inspect.js";
 import SetQueryDirective from "./Query.js";
 import VarDirective from "./Var.js";
 import PromptDirective from "./Prompt.js";
+import SetBodyDirective from "./Body.js";
 
 const requestDirective = new RequestDirective();
 const directives: Record<string, IDirective> = {
@@ -29,6 +30,7 @@ const directives: Record<string, IDirective> = {
     "@prompt": new PromptDirective(),
     "@set": new SetVarDirective(),
     "@query": new SetQueryDirective(),
+    "@body": new SetBodyDirective(),
     "@header": new SetHeaderDirective(),
     "@headers": new SetHeadersDirective(),
     "@include": new IncludeDirective(),
