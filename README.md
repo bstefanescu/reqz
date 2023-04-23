@@ -134,7 +134,11 @@ Examples: requets URLs, request header values, `@include`, `@echo` etc.
 
 Expressions are isloated and cannot access javascript globals. If you need to add your own functions to be acessed in expressions you can do so by using the `@import` directive.
 
-The only built-in function available in the expressions scope is `base64`. This is usefull to generate basic authentication headers like:
+There are 2 built-in functions available in the expressions scope:
+1. `base64` - this is usefull to generate basic authentication headers.
+2. `promptPassword` - this can be used with the `@prompt` command.
+
+**Example:**
 
 ```
 Authorization: Basic ${base64(username+':'+password)}
@@ -213,12 +217,34 @@ In the example above the `env` variable is set to `"dev"` only if not yet define
 
 ### @prompt
 
-**Usage:** `@prompt vairableName: Question`
+**Usage:** `@prompt {[key: string] : string | {message: string, type?: string}}`
 
-The variableName must be a valid javascript variable name. The question part can be any valid string expression (it can be a string template).
+The command is displaying a prompt to get the value from the user for the request variables.
+
+The variable name is the object key, and the object value is either the message to display (i.e. the question) or an object defining the message and the type of the prompt. The possible types are: `input`, `text` (na alias for input), `password`. When used in the terminal, [enquirer](https://www.npmjs.com/package/enquirer) will be used as the prompter so you can use any type supported by enquirer.
+
+If the variable is already defined (i.e. having any other value than undefined) value then the user will not be prompted for its value.
+
+To mask the user input use the type password or the built-in function `promptPassword`.
+
+**Example**
+
+To ask for the username and a password you can use:
 
 ```
-@prompt email : "Your email? "
+@prompt {
+  username: "Your username?",
+  password: {message: "Your password?", type: "password"}
+}
+```
+
+or using `promptPassword`:
+
+```
+@prompt {
+  username: "Your username?",
+  password: promptPassword("Your password?")
+}
 ```
 
 ### @query
