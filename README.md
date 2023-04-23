@@ -172,66 +172,35 @@ Here is the list of all of the supported directives:
 
 ### @var
 
-**Usage**: `@var userid, firstName?, lastName?
+**Usage**: `@var userid, firstName?, lastName?`
 
 Declare variable names used in the script file. Optional variables must be suffixed with an `?` character.
-As indicated above variables declaration is optional. If you want to avoid trowing errors when using an optional variable then you must declare the variable as optional.
+As indicated above variables declaration is optional. If you want to avoid `undefined variable` errors when using an optional variable then you must declare the variable as optional.
 
 ### @set
 
 **Usage**: `@set variable = value`
 
-Set a variable. The values can be: strings, numbers, booleans, null, template strings, variable references.
+Set a variable. The values can be any valid javascript expression (inlcuding literals like strings, numbers, booleans, null, backtick template expressions).
 
-To define a string variable surround it by double or single quotes:
+**Examples:**
 
 ```
 @set apiUrl = "https://my.server.com/api/v1"
-```
-
-or 
-
-```
-@set apiUrl = 'https://my.server.com/api/v1'
-```
-
-You can use the escape character as usual to add qutoes inside a quoted string. 
-Ex: `@set msg = "Hello \"World\""`
-
-To define numbers use a number literal:
-
-```
+@set name = 'John Doe'
 @set port = 8080
-```
-
-Same for booleans:
-
-```
-@set verbose = true
-```
-
-You can even set a variable to null:
-
-```
-@set name = null
-```
-
-To define a string with variable substitutions use a template literal (and souround variables using mustaches):
-
-```
-@set url = `https://{{host}}/{{path}}`
-```
-
-You can also assign another variable:
-
-```
-@set x = y
-```
-
-You can apply a default value or filters as supported by the reqz expression:
-
-```
-@set lowerCaseEmail = email ? "john@doe.com" | lowercase
+@set category = null
+@set url = `https://${host}/${path}`
+@set user = {
+  firstName,
+  lastName,
+  role: 'reader'
+}
+@set fields = ['name', 'email']
+@set secure = true
+@set protocol = secure ? 'https' : 'http'
+@set lowerCaseEmail = email.toLowerCase()
+...
 ```
 
 The `@set` directive can also be used to define a default value for a variable. This can be done using the `?=` assignement oeprator:
@@ -241,6 +210,7 @@ The `@set` directive can also be used to define a default value for a variable. 
 ```
 
 In the example above the `env` variable is set to `"dev"` only if not yet defined.
+
 
 ### @include
 
