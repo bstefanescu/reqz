@@ -86,10 +86,6 @@ export default class RequestModule {
     }
 
     setQueryExpr(value: string) {
-        value = value.trim();
-        if (!value.startsWith('{')) {
-            throw new Error('Invalid query expression. Expecting an object.');
-        }
         const expr = parseObjectExpression(value);
         this.commands.push({
             run: (env) => {

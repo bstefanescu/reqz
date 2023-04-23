@@ -53,6 +53,7 @@
     "chalk": "^5.2.0",
     "commander": "^10.0.0",
     "csv-parse": "^5.3.6",
+    "enquirer": "^2.3.6",
     "superagent": "^8.0.9"
   }
 }
