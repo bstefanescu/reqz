@@ -159,12 +159,12 @@ Here is the list of all of the supported directives:
 - @set
 - @prompt
 - @include
+- @run
 - @query
 - @header
 - @headers
 - @echo
 - @inspect
-- @run
 - @import
 - @call
 - @file
@@ -211,13 +211,93 @@ The `@set` directive can also be used to define a default value for a variable. 
 
 In the example above the `env` variable is set to `"dev"` only if not yet defined.
 
+### @prompt
+
+**Usage:** `@prompt vairableName: Question`
+
+The variableName must be a valid javascript variable name. The question part can be any valid string expression (it can be a string template).
+
+```
+@prompt email : "Your email? "
+```
+
+### @query
+
+**Usage**: 
+
+```
+@query {
+  userId,
+  sort,
+  verbose:true,
+}
+```
+
+The query argument must be a javascript object.
+
+Define the query string to be used by the current request. This can be handy to define the query as an object rather that to include it in the URL as an encoded query string. If both a query object and q query string is appended to the URL the two queries will be merged.
+
+
+### @header
+
+**Usage**: `@header Accept: application/json`
+
+Set a single header for the current request. Usefull to define header presets in an included file.
+The header value accept any valid string expression )inclusing string templates). The header name doesn't accept expressions.
+
+**Example** 
+
+```
+@header Authorization: ${base64(username+':'+password)}
+```
+
+### @headers
+
+**Usage**: 
+
+```
+@headers {
+  Accept: "application/json"
+  "Content-Type": "application/json"
+}
+```
+
+Similar to `@header` but can set multiple header lines. The headers arguments must be a valid javascript object.
+
+
+### @body
+
+**Usage**: 
+
+```
+@body {
+  email,
+  firstName,
+  lastName,
+  role: "reader"
+}
+```
+
+Define the body of the current request. The body argument must be a valid javascript object.
+
+This can be handy to define body templates in an included file.
+
+If the request is also defining a body this will overwrite the body defined using the `@body` directive.
+
 
 ### @include
 
 **Usage:** `@include path/to/file.req`
 
-The file path supports variable expansion like a template literal but not surrounded by backtick characters `\``. 
-**Example:** `@include {baseDir}/file.req`
+The file argument can be any valid string expression (including string templates)
+
+**Examples:** 
+```
+@include ${baseDir}/file.req
+@include `${baseDir}/sub dir/file.req`
+@include ./presets.req
+@include "./presets.req"
+```
 
 The file path is **resolved** relative to the current file.
 
@@ -229,91 +309,87 @@ Here is an example:
 #### Main file
 
 ```
-@set env ?= "dev"
-@import ./env/{{env?"dev"}}.req
+@var apiUrl, env?
+@import ./env/${env||'dev'}.req
 
-GET {{apiUrl}}/protected-endpoint
+GET ${apiUrl}}/protected-endpoint
 ```
+
 
 #### Included file (./env/dev/req)
 
 ```
+@var username, password
 @set apiUrl = "https://my.server.com/api/v1"
 # the username and password are specified on the command line as --username and --password
-@set auth = `{{username}}:{{password}}`
+@set auth = base64(username+':'+password)
 
-@headers
-Authorization: {{auth | base64}}
-Accept: application/json
+@header Authorization: ${auth}
+@header Accept: application/json
 ```
 
 The `@headers` directive is setting headers for the current request (from outside the request header lines)
+
 
 ### @run
 
 **Usage**: `@run ./some/request.req`
 
-As for the `@include` directive the path support variable expansion. The file is **resolved** relative to the current file.
+Run another script in its own context. The current script execution is paused until the child request completes. The response of the request will be injected in the current script as the `$response` variable.
 
-The request described in the taregt file will be executed. THis differs from the `@include` since the target request cannot alter the current request environment. It cannot set variables or headers in the main request.
+As for the `@include` directive the file argument support any valid string expressions (including string templates). The file is **resolved** relative to the current file.
+
+This differs from the `@include` since the child script execution cannot alter the current request environment. It cannot set variables or headers in the main request.
 
 This can be usefull to create sequential requests runs (like a test suite). 
-After the target request is executed the response object will be set in the caller environment as the `$response` variable. To access the decoded (JSON) body use `$response.body`. To access the response text (not decoded) use `$response.text`. The response status is available as `$response.status`. 
+
+To access the decoded *(JSON)* body use `$response.body`. To access the response text (not decoded) use `$response.text`. The response status is available as `$response.status`. 
 For all available fields see the `IRequest` interface in the sources.
 
-You can then use the response body to prepare the environment for the next request and thus chain several request runs that depends each one fro the previous one. Exanmple: login then POST an object then PUT to modify the object etc.
+You can then use the response body to prepare the environment for the next request and thus chain several request runs. Exanmple: login then POST an object then PUT to modify the object etc.
+
 
 ### @echo
 
-**Usage**: `@echo Hello World!`
+**Usage**: `@echo message`
 
-Print something with `console.log`. The directive accepts template literals for variable substitution.
+Print the message with `console.log`. The directive accepts template literals for variable substitution.
 
-**Example:** `@echo Username is {{username}}`
+The message argument support any valid string expressions (including string templates).
+
+**Example:** 
+
+```
+@echo Username is ${username}
+```
 
 ### @inspect
 
-**Usage**: `@inspect someObject`
+**Usage**: `@inspect object`
 
 Print detailed information about a variable value (using node inspect). Usefull to debug.
 
-**Example:** `@inspect $env` will print the current request environemnt 
+The object argument should be the name of a variable defiend in the script environment. Javascript expression are njot supported but you can use dots `.` to access properties of the a top level variable.
 
-### @header
-
-**Usage**: `@header Accept: application/json`
-
-Set a single header for the current request. Usefull to define header presets in an included file.
-The header value accept variable subsitution. But not the header name.
-
-**Example:** `@header Authorization: Basic {{auth | base64}}`
-
-### @headers
-
-**Usage**: 
+**Examples** 
 
 ```
-@headers
-Accept: application/json
-Content-Type: application/json
+#will print the current request environemnt 
+@inspect $env` 
+
+# print the JSON body of the last request
+@inspect $response.body
 ```
 
-Similar to `@header` but can set multiple header lines. The headers are collected until other directive is found or the end of file is reached. Also, as `@header` this directive accepts variable expansion for header values.
+### @import
 
-### @lib
+**Usage**: `@import some/javascript/file.js`
 
-**Usage**: `@lib some/javascript/file.js`
+The directive doesn't support expressions or variable expansion. Only tring literals. You can also use strings not surrounded by quotes.
 
-The directive doesn't support variable expansion.
+Load a javascript file that exports functions. The functions will be available in the execution scope of the expressions in the current script.
 
-Load a javascript file that exports functions. The functions will be available as filters or can be invoked using the `@call` directive.
-
-There are two types of fucntions:
-
-1. Functions that are usable as filters. The functions takes an input value and return and output value: `(value:any) => any`
-2. Functions that are callbable using the `@call` directive. These functions can be uses to alter the environment and are called in the context of the current request (i.e. `this` will point to the current request module). The signature is: `(this:RequestModule, env: Environment) => void`
-
-A library file should export the functions using named exports. Example:
+An imported file must export the functions using named exports. Example:
 
 ```
 export function lowercase(value:any) { return String(value).toLowerCase(); }
@@ -322,12 +398,22 @@ export function debug(env:Environment) { console.log(this.file, env.vars) }
 
 ### @call
 
-**Usage**: `@call someFunction`
+**Usage**: `@call function`
 
-Call a function loaded using `@lib` directive. The function tajes an argument of type Environment and the `this` variable will point to the `RequestModule` object.
+The function argument must be the name of an iported function (using `@import` directive). 
 
-The `Environment` object has 3 fields: `vars`, `headers` and `functions` that represents the current defined vars (using the `@set` directive or the command line), the current defined headers (using `@header` or `@headers` directives) and the loaded fucntions (using the `@lib` directive)
+The function signature must be: `(env:Environment) => any`.
 
+The function will be called in the context of the request module (i.e. `this` variable will point to the current request module of type `RequestModule`) At execution, the fucntion will receive as argument the current environment (of type `Environment`).
+
+Look into the sources for the methods and properties available on `RequestModule` and `Environment` objects.
+
+
+### @file
+
+**Usage**: `@file filen`
+
+TODO
 
 ## Logging
 
