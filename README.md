@@ -95,16 +95,16 @@ Content-Type: application/octet-stream
 
 ### Variables
 
-Variables can be defined on the command line using `--varName 'varValue'` arguments or can be set in the requets script file using the `@set` directive.
+Variables can be defined on the command line using `--varName 'varValue'` arguments or can be set in the request script file using the `@set` directive.
 There are 2 type of variables:
 1. required variables - the default one.
-2. optional variables. When using JSON like expression to set the request query or body, if a variable is not defined then an 'undefined variable' error will be thrown. To avoid this and to ignore setting the property which is not defined yoiu need to declare this variable as optional. 
-This can be done using the `@var` directiveby appending the '?' character to the variable name. The directive can be used to declare the required variables used in the file as well. Declaring required variables is optional but is recommended since IDE integration tools may use this information for generating autocompletion.
+2. optional variables. When using JSON like expression to set the request query or body, if a variable is not defined then an 'undefined variable' error will be thrown. To avoid this and to ignore the undefined property you need to declare the variable as optional. 
+This can be done using the `@var` directive by appending the '?' character to the variable name. The directive can be used to declare required variables  as well. Declaring required variables is optional but is recommended since IDE integration tools may use this information for generating autocompletion.
 
 **Example**
 
 ```
-@var apiUrl, userId, userEmail, firstName?, lastName?
+@var userId, userEmail, firstName?, lastName?
 @set apiUrl = 'https://my.server.com/api/v1'
 
 PUT ${apiUrl}/users/${userId}
@@ -116,24 +116,25 @@ PUT ${apiUrl}/users/${userId}
 }
 ```
 
-If you don't define the `userEmail` when running the above script then an error is thrown. But this is not happening if you don't define fhe `firstName`, because it is defined as optional. Instead, the firdtName will be ignored and not included in the body object.
+If you don't define the `userEmail` when running the above script then an error is thrown. But, the script will succeed if the `firstName` is not defined, since it is defined as optional. It will be simply ommited from the request body.
 
-There are 3 builtin variable names, that you should not use:
+There are 3 builtin variable names, that you can use:
 1. `$env` - the request environment - usefull to debug using `@inspect` directive
 2. `$response` - the response object of the last executed request. See `@run` directive
-3. `$play` - the current csv record when replaying a csv defining different values for the same variables (i.e. records). See `--play` flag.
+3. `$play` - the current csv record when replaying requests using input from a csv file. See the `--play` flag.
 
 
 ### Expressions
 
 There 2 types of expressions:
 1. Literal values: "a double quoted string", 'a single quoted string', true, false, null, 123 (i.e. numbers), \``a template literal: Hello ${name}`\`.
-2. Javascript expression. Any `ES2020` javascript expression is supported. 
-3. String templates not surrounded by backticks. Example: `GET ${apiUrl}/users/${userId}`. These expression can be used in any directive that expects a string as its argument (if not explicitely stated in directive doc that it doesn't accept expressions) like: requets URLs, request header values, `@include`, `@echo` etc.
+2. Javascript expression. Any [ES2020](https://node.green/#ES2020) javascript expression is supported. 
+3. String templates not surrounded with backticks. Example: `GET ${apiUrl}/users/${userId}`. These expression can be used in any directive that expects a string as its argument (if not explicitly stated in the directive doc. that it doesn't accept expressions).
+Examples: requets URLs, request header values, `@include`, `@echo` etc.
 
 Expressions are isloated and cannot access javascript globals. If you need to add your own functions to be acessed in expressions you can do so by using the `@import` directive.
 
-The only built-in fucntion available in the expressions scope is `base64`. This is usefull to generate basic authentication headers like:
+The only built-in function available in the expressions scope is `base64`. This is usefull to generate basic authentication headers like:
 
 ```
 Authorization: Basic ${base64(username+':'+password)}
@@ -141,7 +142,7 @@ Authorization: Basic ${base64(username+':'+password)}
 
 ### Comments
 
-You can add comments by starting aline with a `#` character:
+You can add comments by starting a line with the `#` character:
 
 ```
 # List the existing users
