@@ -437,9 +437,23 @@ Look into the sources for the methods and properties available on `RequestModule
 
 ### @file
 
-**Usage**: `@file filen`
+**Usage**: `@file file`
 
-TODO
+This directive is only supported while parsing the request body.
+
+The file path is resolved relative to the current script file location. The file argument must be a string literal (it may or not be surrounded by quotes). You cannot use variable expansion. 
+
+The body will be read from the given file, and the content will not be scanned to expand variables.
+
+**Note:** this is an experimental feature. It may be removed or change in the future.
+
+**Example**
+
+```
+POST ${apiUrl}/files/my-file
+
+@file './test-file'
+```
 
 ## Logging
 
