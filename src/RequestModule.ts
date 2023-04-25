@@ -160,12 +160,13 @@ export default class RequestModule {
         }
         let response;
         try {
+            this.logRequest(req);
             response = await request(req);
-            this.logRequest(req, response);
+            this.logResponse(response);
         } catch (e) {
             response = (e as any).response as IResponse;
             if (response) {
-                this.logger.logErrorResponse(req, response);
+                this.logger.logResponseError(response);
             } else {
                 throw e;
             }
@@ -173,11 +174,19 @@ export default class RequestModule {
         return response;
     }
 
-    logRequest(req: IRequest, response: IResponse) {
+    logRequest(req: IRequest) {
         if (this.parent) {
-            this.logger.logChildRequest(req, response);
+            this.logger.logChildRequest(req);
         } else {
-            this.logger.logRequest(req, response);
+            this.logger.logRequest(req);
+        }
+    }
+
+    logResponse(response: IResponse) {
+        if (this.parent) {
+            this.logger.logChildResponse(response);
+        } else {
+            this.logger.logResponse(response);
         }
     }
 

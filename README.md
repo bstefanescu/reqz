@@ -17,12 +17,25 @@ The application is executing requests described using `reqz` request files.
 
 **Options:**
 ```
-  -q | --quiet                   Run quitely. Do not output enything.
-  -a | --all                     Log all the request from the request chain not only the main one.
-  -l | --log <string>            Log settings. A list separated by commas. Can be any combination of: "req,reqh,reqb,resh,resb".
-  -p | --play <string>           Takes a csv file as value. Play the same request for each set of variables created for each line from the csv file. The csv header is expected to specify the variable names.
+  -q | --quiet                   Run quitely. Do not output anything.
+  -v | --verbose [level]         Verbosity level.
+      -v0 - only log the request line.
+      -v1 - log the request line and the response body.
+      -v2 - log the request line and headers and the response headers and body.
+      The default is -v1
+
+  -a | --all                     Log all the requests from the request chain not only the main one.
+  -l | --log <string>            Log configuration. Any combination of reqh,reqb,resh,resb separated by commas.
+      - reqh - print the request headers.
+      - reqb - print the request body.
+      - resh - print the response headers.
+      - resb - print the response body.
+      If specified will overwrite the verbosity flag.
+
+  -p | --play <string>           Takes a csv file as value. Play the same request for each set of variables created for each line in the csv file. The csv header is expected to specify
+                                 the variable names.
   -c | --col-delimiter <string>  A column delimiter in case --play was specified. The default is the comma character.
-  -v, --version                  output the current version
+  -V, --version                  output the current version
   -h, --help                     display help for command
 ```
 
@@ -178,8 +191,10 @@ Here is the list of all of the supported directives:
 
 **Usage**: `@var userid, firstName?, lastName?`
 
-Declare variable names used in the script file. Optional variables must be suffixed with an `?` character.
+Declare variable names expected in the script file. Optional variables must be suffixed with an `?` character.
 As indicated above variables declaration is optional. If you want to avoid `undefined variable` errors when using an optional variable then you must declare the variable as optional.
+
+You should only declare variables that are inherited from the environment (e.g. form the command line). It is useless to declare variables that are defined using the `@set` directive.
 
 ### @set
 

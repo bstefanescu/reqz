@@ -50,7 +50,6 @@ class RequestBodyParser implements ILineParser {
             } else {
                 module.setBodyExpr(body);
             }
-            module.setHeader("Content-Length", body.length.toString());
         }
     }
 

@@ -1,6 +1,6 @@
 {
   "name": "reqz",
-  "version": "0.9.9",
+  "version": "0.10.0",
   "description": "Requests automation for REST APIs",
   "main": "lib/client/index.js",
   "files": [

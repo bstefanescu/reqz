@@ -25,7 +25,7 @@ function getArgsAndVars(argsAndVars: string[]) {
                 args.push(...argsAndVars.slice(i + 1));
                 break;
             } else {
-                key = arg;
+                key = arg.substring(2);
             }
         } else if (key) {
             vars[key] = NUMBER_RX.test(arg) ? parseFloat(arg) : arg;
@@ -42,23 +42,38 @@ function getArgsAndVars(argsAndVars: string[]) {
 
 function getLogger(quiet?: boolean, all?: boolean, log?: string) {
     if (quiet) return new QuietLogger();
+    const config: any = { all: !!all };
     if (log) {
-        const config: any = { all: !!all };
         log.split(',').forEach(flag => config[flag] = true);
-        return new Logger(config);
+    } else {
+        config.resb = true;
     }
-    return new Logger();
+    return new Logger(config);
 }
+
+const verboseHelp = `Verbosity level.
+    -v0 - only log the request line.
+    -v1 - log the request line and the response body.
+    -v2 - log the request line and headers and the response headers and body.
+    The default is -v1
+`;
+
+const logHelp = `Log configuration. Any combination of reqh,reqb,resh,resb separated by commas.
+    - reqh - print the request headers.
+    - reqb - print the request body.
+    - resh - print the response headers.
+    - resb - print the response body.
+    If specified will overwrite the verbosity flag.    
+`;
 
 program
     .name('reqz')
     .description('run http requests')
     .argument('<file>', 'the request file to run')
-    .option('-q | --quiet', 'Run quitely. Do not output enything.')
-    .option('-v | --verbose', 'Verbose mode: log request and response headers in addition to request line and response body.')
-    .option('-vv', 'Very verbose mode: log the request line, headers and body and response headers and body.')
-    .option('-a | --all', 'Log all the request from the request chain not only the main one.')
-    .option('-l | --log <string>', 'Log settings. A list separated by commas. Can be any combination of: "req,reqh,reqb,resh,resb".')
+    .option('-q | --quiet', 'Run quitely. Do not output anything.')
+    .option('-v | --verbose [level]', verboseHelp)
+    .option('-a | --all', 'Log all the requests from the request chain not only the main one.')
+    .option('-l | --log <string>', logHelp)
     .option('-p | --play <string>', 'Takes a csv file as value. Play the same request for each set of variables created for each line in the csv file. The csv header is expected to specify the variable names.')
     .option('-c | --col-delimiter <string>', 'A column delimiter in case --play was specified. The default is the comma character.')
 program.version(pkg.version, '-V, --version', 'output the current version');
@@ -70,8 +85,22 @@ const opts = program.opts();
 const reqFile = resolve((args as any)[0]);
 const csvFile = opts.play && resolve(opts.play);
 
-
-const logger = getLogger(opts.quiet, opts.all, opts.log);
+let log = opts.log;
+if (!log && opts.verbose != null) {
+    const level = parseInt(opts.verbose);
+    if (isNaN(level)) {
+        console.error('Invalid verbose level. Must be a number.');
+        process.exit(1);
+    }
+    if (level === 1) {
+        log = 'resb';
+    } else if (level === 2) {
+        log = 'reqh,resh,resb';
+    } else if (level >= 3) {
+        log = 'reqh,reqb,resh,resb';
+    }
+}
+const logger = getLogger(opts.quiet, opts.all, log);
 
 RequestModule.usePrompter(new EnquirerPrompter());
 
