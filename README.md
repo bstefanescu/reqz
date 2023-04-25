@@ -288,7 +288,18 @@ The header value accept any valid string expression )inclusing string templates)
 }
 ```
 
-Similar to `@header` but can set multiple header lines. The headers arguments must be a valid javascript object.
+Similar to `@header` but can set multiple header lines. The headers arguments must be a valid javascript object. 
+Using this notation you can conditionally set a header. Setting `null` or `undefined` as the header value will ignore the header.
+
+**Example:**
+
+```
+@headers {
+  "authorization": authToken ? `Bearer ${authToken}` : null
+}
+```
+
+In the previous example the authorization header will not be set if the `authToken` variable is not defined.
 
 
 ### @body

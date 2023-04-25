@@ -55,7 +55,10 @@ export default class RequestModule {
         const expr = parseStringExpression(value);
         this.commands.push({
             run: (env) => {
-                env.headers[name] = expr.eval(env);
+                const value = expr.eval(env);
+                if (value != null) {
+                    env.headers[name] = String(value);
+                }
             }
         });
     }
