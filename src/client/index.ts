@@ -55,11 +55,13 @@ program
     .description('run http requests')
     .argument('<file>', 'the request file to run')
     .option('-q | --quiet', 'Run quitely. Do not output enything.')
+    .option('-v | --verbose', 'Verbose mode: log request and response headers in addition to request line and response body.')
+    .option('-vv', 'Very verbose mode: log the request line, headers and body and response headers and body.')
     .option('-a | --all', 'Log all the request from the request chain not only the main one.')
     .option('-l | --log <string>', 'Log settings. A list separated by commas. Can be any combination of: "req,reqh,reqb,resh,resb".')
     .option('-p | --play <string>', 'Takes a csv file as value. Play the same request for each set of variables created for each line in the csv file. The csv header is expected to specify the variable names.')
     .option('-c | --col-delimiter <string>', 'A column delimiter in case --play was specified. The default is the comma character.')
-program.version(pkg.version, '-v, --version', 'output the current version');
+program.version(pkg.version, '-V, --version', 'output the current version');
 program.allowUnknownOption(true).parse();
 
 const [args, vars] = getArgsAndVars(program.args);
