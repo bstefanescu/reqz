@@ -83,10 +83,6 @@ new RequestModule(logger).loadFile(reqFile).then((module: RequestModule) => {
 
 
 function handleError(err: any) {
-    if ('status' in err && 'response' in err) {
-        logger.logErrorResponse(err.response);
-    } else {
-        console.error(err);
-    }
+    console.error(err);
     process.exit(1);
 }

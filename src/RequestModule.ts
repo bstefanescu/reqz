@@ -2,7 +2,7 @@ import { dirname, resolve } from "path";
 import Environment from "./Enviroment.js";
 import { parseBodyExpression, parseObjectExpression, parseStringExpression } from "./Expression.js";
 import { ILogger, Logger } from "./Logger.js";
-import { request } from "./http.js";
+import { IRequest, IResponse, request } from "./http.js";
 import Parser from "./parse/Parser.js";
 import { IPrompt, IPrompter } from "./prompt.js";
 
@@ -141,11 +141,7 @@ export default class RequestModule {
         for (const command of this.commands) {
             await command.run(env);
         }
-        const response = await this.request(env);
-        if (response && response.error) {
-            throw new Error(`Request failed with status ${response.status}: ${(response.error as any)?.text}`);
-        }
-        return response;
+        return await this.request(env);
     }
 
     async request(env: Environment) {
@@ -162,13 +158,27 @@ export default class RequestModule {
             headers: env.headers,
             body: env.body
         }
-        const response = await request(req);
+        let response;
+        try {
+            response = await request(req);
+            this.logRequest(req, response);
+        } catch (e) {
+            response = (e as any).response as IResponse;
+            if (response) {
+                this.logger.logErrorResponse(req, response);
+            } else {
+                throw e;
+            }
+        }
+        return response;
+    }
+
+    logRequest(req: IRequest, response: IResponse) {
         if (this.parent) {
             this.logger.logChildRequest(req, response);
         } else {
             this.logger.logRequest(req, response);
         }
-        return response;
     }
 
     async loadFile(file: string): Promise<RequestModule> {

@@ -4,12 +4,12 @@
 @echo ${yyy}
 @include ./env/${env||"dev"}.req 
 
-@prompt {
-  username: "Your username?",
-  password: promptPassword("Your password?")
-}
+#@prompt {
+#  username: "Your username?",
+#  password: promptPassword("Your password?")
+#}
 
-@echo === ${username} : ${password}
+#@echo === ${username} : ${password}
 
 
 @echo Environment is:

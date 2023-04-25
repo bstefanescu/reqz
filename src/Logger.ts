@@ -36,7 +36,7 @@ export interface ILogger {
     echo(msg: string): void;
     logRequest(req: IRequest, res: IResponse): void;
     logChildRequest(req: IRequest, res: IResponse): void;
-    logErrorResponse(res: any): void;
+    logErrorResponse(req: IRequest, res: IResponse): void;
 }
 
 /// the defsault logger
@@ -59,38 +59,61 @@ export class Logger implements ILogger {
             print(chalk.bold.green((req.method + ' ' + req.url)));
         }
         if (config.reqh) {
-            print(req.headers);
-            print();
+            printHr();
+            print(chalk.blue.bold("Request Headers:"));
+            printHeaders(req.headers);
         }
         if (config.reqb) {
+            print();
             print(req.body ? inspect(req.body) : '');
         }
         if (config.reqh || config.reqb) {
-            print(chalk.gray('---------------------------------------------------'));
+            printHr();
         }
         if (config.req || config.reqh || config.reqb) {
             print();
             print(chalk.green.bold("Response"));
         }
         if (config.resh) {
-            print(res.headers);
-            print();
+            printHr();
+            print(chalk.blue.bold("Response Headers:"));
+            printHeaders(res.headers);
         }
         if (config.resb) {
+            print();
             print(res.body && res.isJSON ? inspect(res.body) : res.text);
-            print(chalk.gray('---------------------------------------------------'));
         }
     }
-    logErrorResponse(res: any) {
+    logErrorResponse(req: IRequest, res: IResponse) {
+        print();
         print(chalk.red.bold(res.error ? res.error.toString() : "Server Error " + res.status));
-        if (this.config.resh) {
-            print(res.headers);
+        if (this.config.reqh) {
+            printHr();
+            print(chalk.blue.bold("Request Headers:"));
+            printHeaders(req.headers);
+        }
+        if (this.config.reqb) {
             print();
+            print(req.body ? inspect(req.body) : '');
+        }
+        if (this.config.resh) {
+            printHr();
+            print(chalk.blue.bold("Response Headers:"));
+            printHeaders(res.headers);
         }
         if (this.config.resb) {
+            print();
             print(res.body && res.isJSON ? inspect(res.body) : res.text);
-            print(chalk.gray('---------------------------------------------------'));
         }
+    }
+}
+
+function printHr() {
+    print(chalk.gray('---------------------------------------------------'));
+}
+function printHeaders(headers: Record<string, string | string[]>) {
+    for (const key in headers) {
+        print(key + ':', String(headers[key]))
     }
 }
 
