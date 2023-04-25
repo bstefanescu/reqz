@@ -47,7 +47,7 @@ export class Logger implements ILogger {
     }
 
     echo(msg: string) {
-        print('@echo', msg);
+        print(msg);
     }
 
     logChildRequest(req: IRequest, res: IResponse) {
