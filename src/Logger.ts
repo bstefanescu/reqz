@@ -55,6 +55,7 @@ export class Logger implements ILogger {
     }
     logRequest(req: IRequest, res: IResponse) {
         const config = this.config;
+        print();
         if (config.req) {
             print(chalk.bold.green((req.method + ' ' + req.url)));
         }
