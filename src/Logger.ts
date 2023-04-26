@@ -1,5 +1,5 @@
 import { inspect as utilInspect } from 'util';
-import chalk from 'chalk';
+import colors from 'ansi-colors';
 import { IRequest, IResponse } from './http.js';
 
 const print = console.log;
@@ -60,10 +60,10 @@ export class Logger implements ILogger {
     logRequest(req: IRequest) {
         const config = this.config;
         print();
-        print(chalk.bold.green((req.method + ' ' + req.url)));
+        print(colors.bold.green((req.method + ' ' + req.url)));
         if (config.reqh) {
             printHr();
-            print(chalk.blue.bold("Request Headers:"));
+            print(colors.blue.bold("Request Headers:"));
             printHeaders(req.headers);
         }
         if (config.reqb) {
@@ -76,11 +76,11 @@ export class Logger implements ILogger {
         const config = this.config;
         print();
         if (config.resh || config.resb) {
-            print(chalk.green.bold("Response"));
+            print(colors.green.bold("Response"));
         }
         if (config.resh) {
             printHr();
-            print(chalk.blue.bold("Response Headers:"));
+            print(colors.blue.bold("Response Headers:"));
             printHeaders(res.headers);
         }
         if (config.resb) {
@@ -91,10 +91,10 @@ export class Logger implements ILogger {
 
     logResponseError(res: IResponse) {
         print();
-        print(chalk.red.bold(res.error ? res.error.toString() : "Server Error " + res.status));
+        print(colors.red.bold(res.error ? res.error.toString() : "Server Error " + res.status));
         if (this.config.resh) {
             printHr();
-            print(chalk.blue.bold("Response Headers:"));
+            print(colors.blue.bold("Response Headers:"));
             printHeaders(res.headers);
         }
         if (this.config.resb) {
@@ -105,7 +105,7 @@ export class Logger implements ILogger {
 }
 
 function printHr() {
-    print(chalk.gray('---------------------------------------------------'));
+    print(colors.gray('---------------------------------------------------'));
 }
 function printHeaders(headers: Record<string, string | string[]>) {
     for (const key in headers) {

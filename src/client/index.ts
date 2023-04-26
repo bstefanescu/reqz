@@ -6,8 +6,7 @@ import RequestModule from "../RequestModule.js";
 import pkg from "../package.js";
 import play from "./play.js";
 import { EnquirerPrompter } from "../prompt.js";
-
-const NUMBER_RX = /^[+-]?\d+(\.\d+)?$/;
+import { typed } from "../utils.js";
 
 function getArgsAndVars(argsAndVars: string[]) {
     const args: string[] = [];
@@ -28,7 +27,7 @@ function getArgsAndVars(argsAndVars: string[]) {
                 key = arg.substring(2);
             }
         } else if (key) {
-            vars[key] = NUMBER_RX.test(arg) ? parseFloat(arg) : arg;
+            vars[key] = typed(arg);
             key = null;
         } else {
             args.push(arg);

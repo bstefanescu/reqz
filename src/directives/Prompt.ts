@@ -2,6 +2,7 @@ import { BlockDirective } from "../Directive.js";
 import Environment from "../Enviroment.js";
 import { parseObjectExpression } from "../Expression.js";
 import RequestModule from "../RequestModule.js";
+import { typed } from "../utils.js";
 
 
 export default class PromptDirective extends BlockDirective {
@@ -28,10 +29,12 @@ export default class PromptDirective extends BlockDirective {
                 if (prompts.length > 0) {
                     const answers = await module.prompt(prompts);
                     for (const key in answers) {
-                        env.vars[key] = answers[key]; // TODO detect types
+                        env.vars[key] = typed(answers[key]);
                     }
                 }
             }
         });
     }
 }
+
+

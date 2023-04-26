@@ -1,6 +1,6 @@
 {
   "name": "reqz",
-  "version": "0.10.0",
+  "version": "0.11.0",
   "description": "Requests automation for REST APIs",
   "main": "lib/client/index.js",
   "files": [
@@ -50,7 +50,7 @@
     "typescript": "^5.0.2"
   },
   "dependencies": {
-    "chalk": "^5.2.0",
+    "ansi-colors": "^4.1.3",
     "commander": "^10.0.0",
     "csv-parse": "^5.3.6",
     "enquirer": "^2.3.6",

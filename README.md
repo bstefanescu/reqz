@@ -95,16 +95,16 @@ Authorization: Bearer ${base64(username+':'+password)}
 }
 ```
 
-You can also POST a file content as a body. But in that case the file content will not be processed for variable substitution. To post a file use the soecial `@file` directive (which is only usable in the request body):
+You can also create the body from a javascript expression outcome. To do this enclose the javascript expression in parenthesis.
+
+This let's you use the builtin `readFile` function to POST a file content as a body. Binary files are not supported. The files that can be read using readFile must be located inside the same directory (or sub-tree) as the current request script file. 
 
 ```
 POST https://my.server.com/api/v1/users
-Content-Type: application/octet-stream
+Content-Type: application/xml
 
-@file 'path/to/some/content'
+( readFile('user.xml') )
 ```
-
-**Note** that the `@file` directive doesn't support variable substitution.
 
 ### Variables
 
@@ -132,7 +132,7 @@ PUT ${apiUrl}/users/${userId}
 If you don't define the `userEmail` when running the above script then an error is thrown. But, the script will succeed if the `firstName` is not defined, since it is defined as optional. It will be simply ommited from the request body.
 
 There are 3 builtin variable names, that you can use:
-1. `$env` - the request environment - usefull to debug using `@inspect` directive
+1. `$module` - the script module which is currently executed (an instance of `RequestModule`)
 2. `$response` - the response object of the last executed request. See `@run` directive
 3. `$play` - the current csv record when replaying requests using input from a csv file. See the `--play` flag.
 
@@ -147,14 +147,51 @@ Examples: requets URLs, request header values, `@include`, `@echo` etc.
 
 Expressions are isloated and cannot access javascript globals. If you need to add your own functions to be acessed in expressions you can do so by using the `@import` directive.
 
-There are 2 built-in functions available in the expressions scope:
-1. `base64` - this is usefull to generate basic authentication headers.
-2. `promptPassword` - this can be used with the `@prompt` command.
-
-**Example:**
+There are 3 built-in functions available in the expressions scope:
+1. `JSON` - the global JSON object.
+2. `base64` - this is usefull to generate basic authentication headers.
+3. `promptPassword` - this can be used with the `@prompt` command.
+4. `readFile` - an alias to node `fs.readFileSync`. Only files inside the same directory as the current request script file can be read. The default encoding is `utf8`.
+5. `expandFile` - same as `readFile` but will perform variable susbtitutions over the file content.
+**Examples:**
 
 ```
 Authorization: Basic ${base64(username+':'+password)}
+```
+
+Posting the content of a file:
+
+```
+POST ${apiUrl}/files
+
+(expandFile("data.xml", "utf8"))
+```
+
+You can also, load an object described in an external file using string templates for variable substitution.
+
+**Example**
+
+Given a file `data.json`:
+
+```
+{
+  "email": "${email}",
+  "name": "Test User",
+}
+```
+
+The execution of this script 
+
+```
+@set email = "foo@bar.com"
+@set object = JSON.parse(expandFile('./data.json'))
+@inspect object
+```
+
+will print 
+
+```
+{ email: 'foo@bar.com', name: 'Test User'}
 ```
 
 ### Comments
@@ -184,7 +221,6 @@ Here is the list of all of the supported directives:
 - @inspect
 - @import
 - @call
-- @file
 
 
 ### @var
@@ -417,17 +453,19 @@ The message argument support any valid string expressions (including string temp
 
 ### @inspect
 
-**Usage**: `@inspect object`
+**Usage**: `@inspect [object]`
 
-Print detailed information about a variable value (using node inspect). Usefull to debug.
+Print detailed information about a variable (using node inspect). Usefull to debug.
 
-The object argument should be the name of a variable defiend in the script environment. Javascript expression are njot supported but you can use dots `.` to access properties of the a top level variable.
+The object argument is optional. If used it should be the name of a variable defined in the script environment. Javascript expression are njot supported but you can use dots `.` to access properties of the a top level variable.
+
+If the object argument is not defined then the execution environment will be printed.
 
 **Examples** 
 
 ```
-#will print the current request environemnt 
-@inspect $env` 
+#will print the current execution environemnt 
+@inspect 
 
 # print the JSON body of the last request
 @inspect $response.body
@@ -461,26 +499,6 @@ The function will be called in the context of the request module (i.e. `this` va
 Look into the sources for the methods and properties available on `RequestModule` and `Environment` objects.
 
 
-### @file
-
-**Usage**: `@file file`
-
-This directive is only supported while parsing the request body.
-
-The file path is resolved relative to the current script file location. The file argument must be a string literal (it may or not be surrounded by quotes). You cannot use variable expansion. 
-
-The body will be read from the given file, and the content will not be scanned to expand variables.
-
-**Note:** this is an experimental feature. It may be removed or change in the future.
-
-**Example**
-
-```
-POST ${apiUrl}/files/my-file
-
-@file './test-file'
-```
-
 ## Logging
 
 There are 3 command line options that allows you to control the log verbosity.
@@ -494,6 +512,7 @@ There are 3 command line options that allows you to control the log verbosity.
     - reqb: log the request body
     - resh: log the response headers
     - resb: log the response body
+
 
 ## Replaying requests
 

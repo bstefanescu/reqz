@@ -130,6 +130,9 @@ export function parseBodyExpression(text: string) {
     if (first === '{' || first === '[') {
         // a json object or array
         return new Expression(text);
+    } else if (first === '(' && text[text.length - 1] === ')') {
+        // a javascript expression
+        return new Expression(text.substring(1, text.length - 1));
     } else if (hasVarSubstitutions(text)) {
         new Expression('`' + text + '`');
     } else {
@@ -163,16 +166,12 @@ export function parseVarRef(expr: string) {
     return new VarExpr(token.value);
 }
 
-function resolveVar(parts: string[], vars: Record<string, any>, root: any) {
+function resolveVar(parts: string[], vars: Record<string, any>) {
     const first = parts[0];
     let obj: any;
-    if (first === '$env') {
-        obj = root;
-    } else {
-        obj = vars[first];
-        if (obj == null || parts.length === 1) {
-            return obj;
-        }
+    obj = vars[first];
+    if (obj == null || parts.length === 1) {
+        return obj;
     }
     for (let i = 1, len = parts.length; i < len; i++) {
         obj = obj[parts[i]];
@@ -184,7 +183,7 @@ function resolveVar(parts: string[], vars: Record<string, any>, root: any) {
 }
 
 function resolveVarExpr(expr: IVarExprTokens, env: Environment) {
-    let obj: any = resolveVar(expr.varRef, env.vars, env);
+    let obj: any = resolveVar(expr.varRef, env.vars);
     if (obj == null) {
         if (expr.defaultValue !== undefined) {
             obj = expr.defaultValue;

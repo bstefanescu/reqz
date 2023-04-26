@@ -24,6 +24,8 @@ export default class SetVarDirective extends BlockDirective {
         const name = content.substring(0, k).trim();
         const value = parseExpression(content.substring(i + 1).trim());
         module.commands.push(new Command(name, value));
+
+        module.declareVar(name, true);
     }
 }
 

@@ -35,21 +35,13 @@ class RequestHeaderParser implements ILineParser {
     }
 }
 
-const FILE_RX = /^@file\s+([^\n]+)$/
 class RequestBodyParser implements ILineParser {
     lines: string[] = [];
 
     async close(module: RequestModule) {
         if (this.lines.length > 0) {
-            let body = this.lines.join('').trim();
-            const m = FILE_RX.exec(body);
-            if (m) {
-                const value = parseStringLiteral(m[1].trim());
-                body = readFileSync(module.resolveFile(value), 'utf8');
-                module.setBody(body);
-            } else {
-                module.setBodyExpr(body);
-            }
+            const body = this.lines.join('').trim();
+            module.setBodyExpr(body);
         }
     }
 

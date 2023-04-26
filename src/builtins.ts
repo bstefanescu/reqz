@@ -1,5 +1,7 @@
+import { readFileSync } from "fs";
 
 const builtins = {
+    JSON,
     base64(value: string) {
         return value != null ? Buffer.from(String(value), 'utf8').toString('base64') : '';
     },

@@ -1,25 +1,29 @@
 
-@var yyy?, env?, version?
+@var apiUrl, yyy?, env?, version?
 
 @echo ${yyy}
 @include ./env/${env||"dev"}.req 
 
-#@prompt {
-#  username: "Your username?",
-#  password: promptPassword("Your password?")
-#}
-
-#@echo === ${username} : ${password}
+@prompt {
+  username: "Your username?",
+  password: promptPassword("Your password?")
+}
+@echo === ${username} : ${password}
 
 
 @echo Environment is:
-@inspect $env
+@inspect $module
 
-@call debug
+#@call debug
 
 @query {
     version: version,
     all: true
 }
+
+@set content = JSON.parse(expandFile('./data.txt'))
+
+@echo 'here is the content'
+@inspect content
 
 GET ${apiUrl}

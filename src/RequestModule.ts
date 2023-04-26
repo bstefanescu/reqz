@@ -1,10 +1,11 @@
 import { dirname, resolve } from "path";
 import Environment from "./Enviroment.js";
-import { parseBodyExpression, parseObjectExpression, parseStringExpression } from "./Expression.js";
+import { Expression, parseBodyExpression, parseObjectExpression, parseStringExpression } from "./Expression.js";
 import { ILogger, Logger } from "./Logger.js";
 import { IRequest, IResponse, request } from "./http.js";
 import Parser from "./parse/Parser.js";
 import { IPrompt, IPrompter } from "./prompt.js";
+import { readFileSync } from "fs";
 
 let prompterInstance: IPrompter;
 
@@ -128,8 +129,24 @@ export default class RequestModule {
         });
     }
 
+    declareVar(name: string, required: boolean) {
+        this.vars.push({ name, required });
+        if (this.isIncluded && this.parent) {
+            this.parent.declareVar(name, required);
+        }
+    }
+
     exec(inheritedVars?: Record<string, any>) {
-        return this.execWithEnv(new Environment(inheritedVars ? { ...inheritedVars } : {}));
+        const vars = inheritedVars ? { ...inheritedVars } : {};
+        vars.$module = this;
+        vars.readFile = (file: string, encoding?: BufferEncoding) => {
+            return this.safeReadFile(file, encoding);
+        }
+        const env = new Environment(vars);
+        env.vars.expandFile = (file: string, encoding?: BufferEncoding) => {
+            return new Expression('`' + this.safeReadFile(file, encoding) + '`').eval(env);
+        }
+        return this.execWithEnv(env);
     }
 
     async execWithEnv(env: Environment) {
@@ -204,6 +221,19 @@ export default class RequestModule {
 
     resolveFile(file: string) {
         return this.cwd ? resolve(this.cwd, file) : resolve(file);
+    }
+
+    /**
+     * read a text file but only if the file is under the current module directory
+     * @param file 
+     * @param encoding 
+     */
+    safeReadFile(file: string, encoding: BufferEncoding = 'utf8') {
+        file = this.resolveFile(file);
+        if (!file.startsWith(this.cwd + '/')) {
+            throw new Error('Cannot read file: "' + file + '". The file is outside the module directory');
+        }
+        return readFileSync(file, encoding);
     }
 
     get prompter() {

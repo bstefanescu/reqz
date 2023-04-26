@@ -11,11 +11,10 @@ function inspect(obj: any) {
 
 export default class InspectDirective extends LineDirective {
     build(module: RequestModule, arg: string): void {
-        if (!arg) throw new Error('Missing argument for @inspect directive');
-        const varExpr = parseVarRef(arg);
+        const varExpr = arg && parseVarRef(arg);
         module.commands.push({
             async run(env: Environment): Promise<void> {
-                console.log(inspect(varExpr.eval(env)));
+                console.log(inspect(varExpr ? varExpr.eval(env) : env));
             }
         });
     }
