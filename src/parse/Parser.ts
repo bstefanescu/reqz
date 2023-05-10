@@ -5,8 +5,7 @@ import { ILineParser, LineParser } from "./LineParser.js";
 import builtinDirectives from "../directives/index.js"
 
 export default class Parser {
-
-    constructor(public directives: Record<string, IDirective> = builtinDirectives) {
+    constructor(public directives: Record<string, IDirective>) {
     }
 
     async parseFile(module: RequestModule, file: string) {

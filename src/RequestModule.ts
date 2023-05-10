@@ -6,6 +6,8 @@ import { IRequest, IResponse, request } from "./http.js";
 import Parser from "./parse/Parser.js";
 import { IPrompt, IPrompter } from "./prompt.js";
 import { readFileSync } from "fs";
+import builtinDirectives from "./directives/index.js";
+import { IDirective, IDirectiveDefinition, createDirective, tryCreateCustomDirective } from "./Directive.js";
 
 let prompterInstance: IPrompter;
 
@@ -26,6 +28,7 @@ export default class RequestModule {
     logger: ILogger;
     parent?: RequestModule;
     vars: IVar[] = []; // declared vars
+    directives = { ...builtinDirectives };
     commands = new Array<ICommand>();
     isIncluded: boolean;
 
@@ -41,13 +44,20 @@ export default class RequestModule {
 
     async importLib(file: string) {
         file = this.resolveFile(file);
-        const functions: Record<string, (arg: any) => any> =
-            await import(file).then(m => {
-                return { ...m }
-            });
+        const vars: Record<string, any> = await import(file).then(m => {
+            return { ...m }
+        });
+        for (const key in vars) {
+            const dir = tryCreateCustomDirective(vars[key]);
+            if (dir) {
+                this.declareDirective(dir.definition.name, dir);
+                // remove function from env
+                delete vars[key];
+            }
+        }
         this.commands.push({
             run: (env) => {
-                env.loadVars(functions);
+                env.loadVars(vars);
             }
         });
     }
@@ -136,6 +146,13 @@ export default class RequestModule {
         }
     }
 
+    declareDirective(name: string, directive: IDirective) {
+        this.directives[name] = directive;
+        if (this.isIncluded && this.parent) {
+            this.parent.declareDirective(name, directive);
+        }
+    }
+
     exec(inheritedVars?: Record<string, any>) {
         const vars = inheritedVars ? { ...inheritedVars } : {};
         vars.$module = this;
@@ -210,12 +227,12 @@ export default class RequestModule {
     async loadFile(file: string): Promise<RequestModule> {
         this.file = this.parent ? this.parent.resolveFile(file) : resolve(file);
         this.cwd = dirname(this.file);
-        await new Parser().parseFile(this, this.file);
+        await new Parser(this.directives).parseFile(this, this.file);
         return this;
     }
 
     loadContent(text: string): RequestModule {
-        new Parser().parseText(this, text);
+        new Parser(this.directives).parseText(this, text);
         return this;
     }
 

@@ -1,4 +1,3 @@
-import CallDirective from "./Call.js";
 import EchoDirective from "./Echo.js";
 import SetHeaderDirective from "./Header.js";
 import SetHeadersDirective from "./Headers.js";
@@ -35,7 +34,6 @@ const directives: Record<string, IDirective> = {
     "@headers": new SetHeadersDirective(),
     "@include": new IncludeDirective(),
     "@run": new RunDirective(),
-    "@call": new CallDirective(),
     "@echo": new EchoDirective(),
     "@inspect": new InspectDirective(),
     "@import": new ImportDirective(),

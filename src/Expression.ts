@@ -154,6 +154,20 @@ export function parseObjectExpression(text: string) {
     }
 }
 
+export function parseArrayExpression(text: string) {
+    text = text.trim();
+    if (!text) {
+        throw new Error('Invalid empty expression');
+    }
+    const first = text[0];
+    if (first === '[') {
+        // a json array
+        return new Expression(text);
+    } else {
+        throw new Error('Invalid object expression: ' + text);
+    }
+}
+
 export function parseVarRef(expr: string) {
     expr = expr.trim();
     if (!expr) {

@@ -41,6 +41,8 @@ class SetOptVarCommand implements ICommand {
     constructor(private name: string, private value: IEvaluable) {
     }
     run(env: Environment): void {
-        env.vars[this.name] = this.value.eval(env);
+        if (!(this.name in env.vars)) { // only set if undefined
+            env.vars[this.name] = this.value.eval(env);
+        }
     }
 }

@@ -220,8 +220,8 @@ Here is the list of all of the supported directives:
 - @echo
 - @inspect
 - @import
-- @call
 
+You can also create your own directives. See the Custom Directives section.
 
 ### @var
 
@@ -486,17 +486,37 @@ export function lowercase(value:any) { return String(value).toLowerCase(); }
 export function debug(env:Environment) { console.log(this.file, env.vars) }
 ```
 
-### @call
+## Custom Directives
 
-**Usage**: `@call function`
+You can create a custom directive by defining a function in an external javascript file which you import into the script using the `@import` directive. To indicate that your function is a custom directive you must attach to it some meta-data as follows:
 
-The function argument must be the name of an iported function (using `@import` directive). 
+```
+export function helloDirective(env, arg) {
+  console.log('hello', arg);
+}
+helloDirective.__REQZ_DIRECTIVE = {
+  args: "string",
+  name: "hello"  
+}
+```
 
-The function signature must be: `(env:Environment) => any`.
+As soon as the file is imported the directive becomes available. Let's use the above directive:
 
-The function will be called in the context of the request module (i.e. `this` variable will point to the current request module of type `RequestModule`) At execution, the fucntion will receive as argument the current environment (of type `Environment`).
+```
+@import 'hello.js'
 
-Look into the sources for the methods and properties available on `RequestModule` and `Environment` objects.
+@hello world!
+```
+
+it wil output: `hello world!`
+
+There are three type of arguments: 
+* string - support variable expansions, plain string using or not using quotes as the `@include` directive 
+* object - a javascript object as the `@query` directive
+* array - a javascript array
+* a custom argument parser function. See the sources for more details.
+
+For the complete directive definition object see `IDirectiveDefinition` interface.
 
 
 ## Logging

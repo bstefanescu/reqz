@@ -1,0 +1,10 @@
+
+@import 'test.js'
+
+@set env ?= 'local'
+
+@hello {
+    env: `${env} !!`
+}
+
+@inspect env
