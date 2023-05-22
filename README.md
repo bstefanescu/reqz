@@ -196,7 +196,7 @@ will print
 
 ### Comments
 
-Line comments can be done by starting a line using `//`. 
+Line comments can be done by starting a line using `//` or `#`. 
 Block line comments are supported using `/* */` blocks.
 
 You can add documentation to your scripts using a comment block (on top of the file) which starts with a `/**` string
