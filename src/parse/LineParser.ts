@@ -27,8 +27,11 @@ export class LineParser implements ILineParser {
 
     async parseLine(module: RequestModule, line: string): Promise<ILineParser> {
         line = line.trim();
-        if (!line || line.startsWith('#')) {
+        if (!line || line.startsWith('//') || line.startsWith('#')) {
             return this; // empty line or comment
+        }
+        if (line.startsWith('/*')) {
+            return new BlockCommentParser(this, line);
         }
         let parser;
         const word = getFirstWord(line);
@@ -72,4 +75,32 @@ export class BlockLineParser extends LineParser {
         await this.directive.build(module, this.arg, this.lines);
     }
 
+}
+
+class BlockCommentParser implements ILineParser {
+    lines: string[] | null = null;
+    constructor(private parent: LineParser, firstLine: string) {
+        if (firstLine.trim() === '/**') {
+            // a doc comment - collect comment lines
+            this.lines = [];
+        }
+    }
+    parseLine(module: RequestModule, line: string): Promise<ILineParser> {
+        line = line.trim();
+        if (line.endsWith('*/')) {
+            this.close(module);
+            return Promise.resolve(this.parent);
+        } else {
+            if (this.lines) {
+                this.lines.push(line);
+            }
+            return Promise.resolve(this);
+        }
+    }
+    close(module: RequestModule): Promise<void> {
+        if (this.lines && !module.doc) {
+            module.doc = this.lines.join('\n');
+        }
+        return Promise.resolve();
+    }
 }

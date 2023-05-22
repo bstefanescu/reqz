@@ -73,6 +73,7 @@ program
     .option('-v | --verbose [level]', verboseHelp)
     .option('-a | --all', 'Log all the requests from the request chain not only the main one.')
     .option('-l | --log <string>', logHelp)
+    .option('-d | --doc', "Print target script documentation")
     .option('-p | --play <string>', 'Takes a csv file as value. Play the same request for each set of variables created for each line in the csv file. The csv header is expected to specify the variable names.')
     .option('-c | --col-delimiter <string>', 'A column delimiter in case --play was specified. The default is the comma character.')
 program.version(pkg.version, '-V, --version', 'output the current version');
@@ -104,7 +105,9 @@ const logger = getLogger(opts.quiet, opts.all, log);
 RequestModule.usePrompter(new EnquirerPrompter());
 
 new RequestModule(logger).loadFile(reqFile).then((module: RequestModule) => {
-    if (csvFile) {
+    if (opts.doc) {
+        console.log(module.doc || 'No documentation available for this script.');
+    } else if (csvFile) {
         play(module, csvFile, vars, opts.colDelimiter || ',').catch(handleError);
     } else {
         module.exec(vars).catch(handleError)

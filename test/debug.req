@@ -1,10 +1,10 @@
 
-@import 'test.js'
+import 'test.js'
 
-@set env ?= 'local'
+set env ?= 'local'
 
-@hello {
+hello {
     env: `${env} !!`
 }
 
-@inspect env
+inspect env

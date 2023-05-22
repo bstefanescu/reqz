@@ -31,6 +31,7 @@ export default class RequestModule {
     directives = { ...builtinDirectives };
     commands = new Array<ICommand>();
     isIncluded: boolean;
+    doc?: string;
 
     constructor(logger?: ILogger, parent?: RequestModule, isIncluded = false) {
         this.logger = logger || new Logger();
