@@ -8,6 +8,7 @@ import { IPrompt, IPrompter } from "./prompt.js";
 import { readFileSync } from "fs";
 import builtinDirectives from "./directives/index.js";
 import { IDirective, IDirectiveDefinition, createDirective, tryCreateCustomDirective } from "./Directive.js";
+import ansiColors from "ansi-colors";
 
 let prompterInstance: IPrompter;
 
@@ -31,7 +32,7 @@ export default class RequestModule {
     directives = { ...builtinDirectives };
     commands = new Array<ICommand>();
     isIncluded: boolean;
-    doc?: string;
+    _doc?: string;
 
     constructor(logger?: ILogger, parent?: RequestModule, isIncluded = false) {
         this.logger = logger || new Logger();
@@ -252,6 +253,34 @@ export default class RequestModule {
             throw new Error('Cannot read file: "' + file + '". The file is outside the module directory');
         }
         return readFileSync(file, encoding);
+    }
+
+    doc(colorize = false) {
+        const doc: string[] = [];
+        doc.push(this._doc ? this._doc.trim() : 'No documentation available for this script.');
+        const requiredVars = [];
+        const optionalVars = [];
+        for (const v of this.vars) {
+            if (v.required) {
+                requiredVars.push(v.name);
+            } else {
+                optionalVars.push(v.name);
+            }
+        }
+        const reqVarsLabel = colorize ? ansiColors.bold('Required variables: ') : 'Required variables: ';
+        const optVarsLabel = colorize ? ansiColors.bold('Optional variables: ') : 'Optional variables: ';
+        const requiredVarsDoc = requiredVars.length ? reqVarsLabel + requiredVars.join(', ') : '';
+        const optionalVarsDoc = requiredVars.length ? optVarsLabel + optionalVars.join(', ') : '';
+        if (requiredVarsDoc || optionalVarsDoc) {
+            doc.push('');
+            if (requiredVarsDoc) {
+                doc.push(requiredVarsDoc);
+            }
+            if (optionalVarsDoc) {
+                doc.push(optionalVarsDoc);
+            }
+        }
+        return doc.join('\n');
     }
 
     get prompter() {

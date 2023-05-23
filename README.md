@@ -32,6 +32,7 @@ The application is executing requests described using `reqz` request files.
       - resb - print the response body.
       If specified will overwrite the verbosity flag.
 
+  -d | --doc                     Print target script documentation
   -p | --play <string>           Takes a csv file as value. Play the same request for each set of variables created for each line in the csv file. The csv header is expected to specify
                                  the variable names.
   -c | --col-delimiter <string>  A column delimiter in case --play was specified. The default is the comma character.

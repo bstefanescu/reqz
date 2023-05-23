@@ -98,8 +98,8 @@ class BlockCommentParser implements ILineParser {
         }
     }
     close(module: RequestModule): Promise<void> {
-        if (this.lines && !module.doc) {
-            module.doc = this.lines.join('\n');
+        if (this.lines && !module._doc) {
+            module._doc = this.lines.join('\n');
         }
         return Promise.resolve();
     }

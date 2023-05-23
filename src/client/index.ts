@@ -106,7 +106,7 @@ RequestModule.usePrompter(new EnquirerPrompter());
 
 new RequestModule(logger).loadFile(reqFile).then((module: RequestModule) => {
     if (opts.doc) {
-        console.log(module.doc || 'No documentation available for this script.');
+        console.log(module.doc(true));
     } else if (csvFile) {
         play(module, csvFile, vars, opts.colDelimiter || ',').catch(handleError);
     } else {
