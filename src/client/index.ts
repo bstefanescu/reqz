@@ -1,7 +1,7 @@
 
 import { program } from "commander";
 import { resolve } from "path";
-import { Logger, QuietLogger } from "../Logger.js";
+import { Logger, QuietLogger, TextLogger } from "../Logger.js";
 import RequestModule from "../RequestModule.js";
 import pkg from "../package.js";
 import play from "./play.js";
@@ -39,15 +39,16 @@ function getArgsAndVars(argsAndVars: string[]) {
     return [args, vars];
 }
 
-function getLogger(quiet?: boolean, all?: boolean, log?: string) {
+function getLogger(textLogger: boolean, quiet?: boolean, all?: boolean, log?: string) {
     if (quiet) return new QuietLogger();
     const config: any = { all: !!all };
     if (log) {
         log.split(',').forEach(flag => config[flag] = true);
     } else {
+        config.reqm = true;
         config.resb = true;
     }
-    return new Logger(config);
+    return textLogger ? new TextLogger(config) : new Logger(config);
 }
 
 const verboseHelp = `Verbosity level.
@@ -58,6 +59,7 @@ const verboseHelp = `Verbosity level.
 `;
 
 const logHelp = `Log configuration. Any combination of reqh,reqb,resh,resb separated by commas.
+    - reqm - print the request method and url.
     - reqh - print the request headers.
     - reqb - print the request body.
     - resh - print the response headers.
@@ -73,6 +75,7 @@ program
     .option('-v | --verbose [level]', verboseHelp)
     .option('-a | --all', 'Log all the requests from the request chain not only the main one.')
     .option('-l | --log <string>', logHelp)
+    .option('-t | --text', 'Output plain text, without colors or JSON formatting')
     .option('-d | --doc', "Print target script documentation")
     .option('-p | --play <string>', 'Takes a csv file as value. Play the same request for each set of variables created for each line in the csv file. The csv header is expected to specify the variable names.')
     .option('-c | --col-delimiter <string>', 'A column delimiter in case --play was specified. The default is the comma character.')
@@ -93,14 +96,14 @@ if (!log && opts.verbose != null) {
         process.exit(1);
     }
     if (level === 1) {
-        log = 'resb';
+        log = 'reqm,resb';
     } else if (level === 2) {
-        log = 'reqh,resh,resb';
+        log = 'reqm,reqh,resh,resb';
     } else if (level >= 3) {
-        log = 'reqh,reqb,resh,resb';
+        log = 'reqm,reqh,reqb,resh,resb';
     }
 }
-const logger = getLogger(opts.quiet, opts.all, log);
+const logger = getLogger(opts.text, opts.quiet, opts.all, log);
 
 RequestModule.usePrompter(new EnquirerPrompter());
 

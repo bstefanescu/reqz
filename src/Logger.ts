@@ -9,6 +9,7 @@ function inspect(obj: any) {
 }
 
 export class LoggerConfig {
+    reqm?: boolean;
     reqh?: boolean;
     reqb?: boolean;
     resh?: boolean;
@@ -39,6 +40,70 @@ export interface ILogger {
     logResponseError(res: IResponse): void;
 }
 
+// Plain text logger - usefull to save raw responses
+export class TextLogger implements ILogger {
+    config: LoggerConfig;
+    constructor(config?: LoggerConfig) {
+        this.config = config || LoggerConfig.defaultConfig();
+    }
+
+    echo(msg: string): void {
+        print(msg);
+    }
+
+    logChildRequest(req: IRequest): void {
+        this.config.all && this.logRequest(req);
+    }
+    logChildResponse(res: IResponse): void {
+        this.config.all && this.logResponse(res);
+    }
+
+    logRequest(req: IRequest): void {
+        const config = this.config;
+        if (config.reqm) {
+            print();
+            print(req.method + ' ' + req.url);
+        }
+        if (config.reqh) {
+            print();
+            print("Request Headers:");
+            printHeaders(req.headers);
+        }
+        if (config.reqb) {
+            print();
+            print(req.body ? String(req.body) : '');
+        }
+    }
+    logResponse(res: IResponse): void {
+        const config = this.config;
+        if (config.resh || config.resb) {
+            print();
+        }
+        if (config.resh) {
+            print();
+            printHeaders(res.headers);
+        }
+        if (config.resb) {
+            print();
+            print(res.text);
+        }
+    }
+    logResponseError(res: IResponse): void {
+        print();
+        print("Error:", res.error ? res.error.toString() : "Server Error " + res.status);
+        if (this.config.resh) {
+            print();
+            print("Response Headers:");
+            printHeaders(res.headers);
+        }
+        if (this.config.resb) {
+            print();
+            print(res.text);
+        }
+    }
+
+}
+
 /// the defsault logger
 export class Logger implements ILogger {
     config: LoggerConfig;
@@ -59,10 +124,12 @@ export class Logger implements ILogger {
 
     logRequest(req: IRequest) {
         const config = this.config;
-        print();
-        print(colors.bold.green((req.method + ' ' + req.url)));
+        if (config.reqm) {
+            print();
+            print(colors.bold.green((req.method + ' ' + req.url)));
+        }
         if (config.reqh) {
-            printHr();
+            print();
             print(colors.blue.bold("Request Headers:"));
             printHeaders(req.headers);
         }
@@ -79,7 +146,7 @@ export class Logger implements ILogger {
             print(colors.green.bold("Response"));
         }
         if (config.resh) {
-            printHr();
+            print();
             print(colors.blue.bold("Response Headers:"));
             printHeaders(res.headers);
         }
@@ -93,7 +160,7 @@ export class Logger implements ILogger {
         print();
         print(colors.red.bold(res.error ? res.error.toString() : "Server Error " + res.status));
         if (this.config.resh) {
-            printHr();
+            print();
             print(colors.blue.bold("Response Headers:"));
             printHeaders(res.headers);
         }
@@ -104,9 +171,7 @@ export class Logger implements ILogger {
     }
 }
 
-function printHr() {
-    print(colors.gray('---------------------------------------------------'));
-}
+
 function printHeaders(headers: Record<string, string | string[]>) {
     for (const key in headers) {
         print(key + ':', String(headers[key]))
@@ -115,6 +180,9 @@ function printHeaders(headers: Record<string, string | string[]>) {
 
 export class QuietLogger implements ILogger {
     echo() {
+        // do nothing
+    }
+    hr() {
         // do nothing
     }
     logRequest() {

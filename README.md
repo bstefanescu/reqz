@@ -16,6 +16,7 @@ The application is executing requests described using `reqz` request files.
   - file:  the request file to run
 
 **Options:**
+
 ```
   -q | --quiet                   Run quitely. Do not output anything.
   -v | --verbose [level]         Verbosity level.
@@ -26,12 +27,14 @@ The application is executing requests described using `reqz` request files.
 
   -a | --all                     Log all the requests from the request chain not only the main one.
   -l | --log <string>            Log configuration. Any combination of reqh,reqb,resh,resb separated by commas.
+      - reqm - print the request method and url.
       - reqh - print the request headers.
       - reqb - print the request body.
       - resh - print the response headers.
       - resb - print the response body.
       If specified will overwrite the verbosity flag.
 
+  -t | --text                    Output plain text, without colors or JSON formatting
   -d | --doc                     Print target script documentation
   -p | --play <string>           Takes a csv file as value. Play the same request for each set of variables created for each line in the csv file. The csv header is expected to specify
                                  the variable names.
